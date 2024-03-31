@@ -1,0 +1,139 @@
+import sqlite3
+import requests
+
+# Your TMDB API key
+api_key = '01d67420c0e9a0cdb6fdc1b5db7ac492'
+
+# Initialize database connection
+connection = sqlite3.connect('movies.db')
+cursor = connection.cursor()
+
+# Create tables
+cursor.execute('''CREATE TABLE IF NOT EXISTS Genres (
+    genre_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL
+)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS Movies (
+    movie_id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    release_date DATE,
+    rating REAL,
+    certification TEXT,
+    poster_path TEXT
+)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS MovieGenres (
+    movie_id INTEGER,
+    genre_id INTEGER,
+    PRIMARY KEY (movie_id, genre_id),
+    FOREIGN KEY (movie_id) REFERENCES Movies(movie_id),
+    FOREIGN KEY (genre_id) REFERENCES Genres(genre_id)
+)''')
+
+# Fetch and insert genres into the Genres table
+url_genres = 'https://api.themoviedb.org/3/genre/movie/list?api_key=' + api_key
+response = requests.get(url_genres)
+genres_data = response.json()
+for genre in genres_data['genres']:
+    cursor.execute('INSERT OR IGNORE INTO Genres (genre_id, name) VALUES (?, ?)',
+                   (genre['id'], genre['name']))
+
+# Number of pages you want to fetch
+num_pages = 5
+
+# Iterate over the specified number of pages to fetch top-rated movies
+for page in range(1, num_pages + 1):
+    url_top_rated = f'https://api.themoviedb.org/3/movie/top_rated?api_key={api_key}&language=en-US&page={page}'
+    response = requests.get(url_top_rated)
+    movies_data = response.json()
+
+    for movie in movies_data['results']:
+        # Insert movie without certification first
+        cursor.execute('''INSERT OR IGNORE INTO Movies (movie_id, title, release_date, rating, certification, poster_path) 
+                      VALUES (?, ?, ?, ?, ?, ?)''', 
+                   (movie['id'], movie['title'], movie['release_date'], 
+                    movie['vote_average'], None, f"https://image.tmdb.org/t/p/w500{movie['poster_path']}"))
+
+        # Now fetch genres for this movie
+        url_movie_details = f'https://api.themoviedb.org/3/movie/{movie["id"]}?api_key={api_key}&language=en-US'
+        response = requests.get(url_movie_details)
+        movie_details_data = response.json()
+
+        # Insert each genre associated with the movie into the MovieGenres table
+        for genre in movie_details_data['genres']:
+            cursor.execute('INSERT OR IGNORE INTO MovieGenres (movie_id, genre_id) VALUES (?, ?)',
+                           (movie['id'], genre['id']))
+            
+        # Now fetch certification for this movie
+        url_certification = f'https://api.themoviedb.org/3/movie/{movie["id"]}/release_dates?api_key={api_key}'
+        response = requests.get(url_certification)
+        certification_data = response.json()
+
+        certification = None
+        for country in certification_data.get('results', []):
+            if country['iso_3166_1'] == 'US':
+                for release in country['release_dates']:
+                    if release.get('certification', '') != '':
+                        certification = release['certification']
+                        break
+                if certification:
+                    break
+
+        # Update the movie record with the fetched certification
+        if certification:
+            cursor.execute('''UPDATE Movies SET certification = ? WHERE movie_id = ?''', 
+                        (certification, movie['id']))
+
+    # Optional: print progress
+    print(f'Page {page} completed')
+
+
+# Iterate over the specified number of pages to fetch top-rated movies
+for page in range(1, num_pages + 1):
+    url_top_rated = f'https://api.themoviedb.org/3/movie/popular?api_key={api_key}&language=en-US&page={page}'
+    response = requests.get(url_top_rated)
+    movies_data = response.json()
+
+    for movie in movies_data['results']:
+        # Insert movie without certification first
+        cursor.execute('''INSERT OR IGNORE INTO Movies (movie_id, title, release_date, rating, certification, poster_path) 
+                        VALUES (?, ?, ?, ?, ?, ?)''', 
+                    (movie['id'], movie['title'], movie['release_date'], 
+                        movie['vote_average'], None, f"https://image.tmdb.org/t/p/w500{movie['poster_path']}"))
+
+        # Now fetch genres for this movie
+        url_movie_details = f'https://api.themoviedb.org/3/movie/{movie["id"]}?api_key={api_key}&language=en-US'
+        response = requests.get(url_movie_details)
+        movie_details_data = response.json()
+
+        # Insert each genre associated with the movie into the MovieGenres table
+        for genre in movie_details_data['genres']:
+            cursor.execute('INSERT OR IGNORE INTO MovieGenres (movie_id, genre_id) VALUES (?, ?)',
+                           (movie['id'], genre['id']))
+            
+        # Now fetch certification for this movie
+        url_certification = f'https://api.themoviedb.org/3/movie/{movie["id"]}/release_dates?api_key={api_key}'
+        response = requests.get(url_certification)
+        certification_data = response.json()
+
+        certification = None
+        for country in certification_data.get('results', []):
+            if country['iso_3166_1'] == 'US':
+                for release in country['release_dates']:
+                    if release.get('certification', '') != '':
+                        certification = release['certification']
+                        break
+                if certification:
+                    break
+
+        # Update the movie record with the fetched certification
+        if certification:
+            cursor.execute('''UPDATE Movies SET certification = ? WHERE movie_id = ?''', 
+                        (certification, movie['id']))
+
+    # Optional: print progress
+    print(f'Page {page} completed')
+
+connection.commit()
+connection.close()
