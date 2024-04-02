@@ -68,6 +68,24 @@ def fetch_movie_by_id(movie_id, connection):
     else:
         return None
     
+def id_to_title(movie_id, connection):
+    cursor = connection.cursor()
+    cursor.execute('SELECT title FROM Movies WHERE movie_id = ?', (movie_id,))
+    title = cursor.fetchone()
+    if title:
+        return title[0]
+    else:
+        return None
+    
+def title_to_id(title, connection):
+    cursor = connection.cursor()
+    cursor.execute('SELECT movie_id FROM Movies WHERE title = ?', (title,))
+    movie_id = cursor.fetchone()
+    if movie_id:
+        return movie_id[0]
+    else:
+        return None
+    
 #Need a function for getting the movie name by passing in the movie id
     
 
