@@ -22,14 +22,15 @@ def fetch_movies(connection):
     movies_data = cursor.fetchall()
     return movies_data
 
-def create_movie_objects(movies_data):
-    movie_objects = []
-    for movie_data in movies_data:
-        movie_id, title, rating, release_date, age_rating, poster_path = movie_data
-        # Assuming you have another function or query that gets the genres for a movie.
-        genres = get_genres_for_movie(movie_id, connection)
-        movie_objects.append(Movie(movie_id, title, genres, rating, release_date, age_rating, poster_path))
-    return movie_objects
+
+# def create_movie_objects(movies_data):
+#     movie_objects = []
+#     for movie_data in movies_data:
+#         movie_id, title, rating, release_date, age_rating, poster_path = movie_data
+#         # Assuming you have another function or query that gets the genres for a movie.
+#         genres = get_genres_for_movie(movie_id, connection)
+#         movie_objects.append(Movie(movie_id, title, genres, rating, release_date, age_rating, poster_path))
+#     return movie_objects
 
 def get_genres_for_movie(movie_id, connection):
     cursor = connection.cursor()
@@ -89,10 +90,3 @@ def title_to_id(title, connection):
 #Need a function for getting the movie name by passing in the movie id
     
 
-# db_connection = connect_to_db('movies.db')
-# movie_title = "Klaus"  # Replace with the actual movie title you're looking for
-# movie = get_movie_by_title(movie_title, db_connection)
-# if movie:
-#     print(f"Movie found: {movie.title}, Genres: {movie.genres}")
-# else:
-#     print("Movie not found.")

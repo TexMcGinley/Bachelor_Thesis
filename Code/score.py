@@ -3,7 +3,7 @@ def calculate_score(user_profile, movie):
     # Weights for each score. These can be adjusted as needed:
     weight_genre = 7
     weight_rating = 5
-    weight_recency = 5
+    weight_recency = 0
     weight_certification = 10
 
     # Calculate genre score
@@ -14,7 +14,7 @@ def calculate_score(user_profile, movie):
     # (TBD) lenght_score = if the movie is outside the users preferred lenght, the score is lower this could also be decided based on user's device type
 
     # Calculate recency score (example calculation)
-    current_year = 1994  # This could be dynamic
+    current_year = 2024  # This could be dynamic
     movie_year = int(movie.release_date[:4])  # Assuming release_date is a string in 'YYYY-MM-DD' format
     recency_score = 1 - (current_year - movie_year) / 100  # Example calculation
 
@@ -43,7 +43,8 @@ def calculate_score(user_profile, movie):
 
 def calculate_total_score(user_profile, recommendation_list):
     # Ranking wieghts:
-    postition_weights = [1.6, 1.2, 1.0, 1.0, 0.8, 0.8, 0.6, 0.6, 0.5, 0.5]
+    #postition_weights = [1.6, 1.2, 1.0, 1.0, 0.8, 0.8, 0.6, 0.6, 0.5, 0.5]
+    postition_weights = [1,1,1,1,1,1,1,1,1,1]
     scores = 0
     # Calculate score for each movie in the recommendation list
     for i, movie in enumerate(recommendation_list):
