@@ -62,7 +62,6 @@ class GameSession:
                 self.epsilon_greedy.update_score(movie.movie_id, score)
         self.score = calculate_total_score(self.user_profile, self.recommendation_list)
 
-
     
     def move_movie(self, old_position, new_position):
         if 0 <= old_position < len(self.recommendation_list) and 0 <= new_position < len(self.recommendation_list):

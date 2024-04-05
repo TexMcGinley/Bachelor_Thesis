@@ -1,17 +1,14 @@
 
 def calculate_score(user_profile, movie):
     # Weights for each score. These can be adjusted as needed:
-    weight_genre = 7
+    weight_genre = 10
     weight_rating = 5
     weight_recency = 0
-    weight_certification = 10
+    weight_certification = 0
 
     # Calculate genre score
     genre_score = sum(user_profile.genre_preferences.get(genre, 0) for genre in movie.genres) / len(movie.genres)    
     rating_score = movie.rating
-    # recency_score = Based on the age of the user account and the release date of the movie. The futher out the moive is from the user age, the lower the score
-    # age_rating_score = depending on the age rating of the movie and the userpreference , the score is adjusted
-    # (TBD) lenght_score = if the movie is outside the users preferred lenght, the score is lower this could also be decided based on user's device type
 
     # Calculate recency score (example calculation)
     current_year = 2024  # This could be dynamic
@@ -20,17 +17,6 @@ def calculate_score(user_profile, movie):
 
     # Calculate age rating score (example calculation)
     certification_score = user_profile.certification_preferences.get(movie.age_rating, 0) / 5  # Assuming max score is 5
-    	
-    # print("genre_score: ", genre_score)
-    # print("rating_score: ", rating_score)
-    # print("recency_score: ", recency_score)
-    # print("certification_score: ", certification_score)
-
-    # print("genre_score * weight_genre: ", genre_score * weight_genre)
-    # print("rating_score * weight_rating: ", rating_score * weight_rating)
-    # print("recency_score * weight_recency: ", recency_score * weight_recency)
-    # print("certification_score * weight_certification: ", certification_score * weight_certification)
-
 
     # Combine scores
     total_score = (genre_score * weight_genre +
@@ -43,8 +29,8 @@ def calculate_score(user_profile, movie):
 
 def calculate_total_score(user_profile, recommendation_list):
     # Ranking wieghts:
-    #postition_weights = [1.6, 1.2, 1.0, 1.0, 0.8, 0.8, 0.6, 0.6, 0.5, 0.5]
-    postition_weights = [1,1,1,1,1,1,1,1,1,1]
+    postition_weights = [1.6, 1.2, 1.0, 1.0, 0.8, 0.8, 0.6, 0.6, 0.5, 0.5]
+    #postition_weights = [1,1,1,1,1,1,1,1,1,1]
     scores = 0
     # Calculate score for each movie in the recommendation list
     for i, movie in enumerate(recommendation_list):
