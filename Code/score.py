@@ -29,12 +29,12 @@ def calculate_score(user_profile, movie):
 
 def calculate_total_score(user_profile, recommendation_list):
     # Ranking wieghts:
-    postition_weights = [1.6, 1.2, 1.0, 1.0, 0.8, 0.8, 0.6, 0.6, 0.5, 0.5]
+    #postition_weights = [1.6, 1.2, 1.0, 1.0, 0.8, 0.8, 0.6, 0.6, 0.5, 0.5]
     #postition_weights = [1,1,1,1,1,1,1,1,1,1]
     scores = 0
     # Calculate score for each movie in the recommendation list
     for i, movie in enumerate(recommendation_list):
-        scores += postition_weights[i] * calculate_score(user_profile, movie)
+        scores += calculate_score(user_profile, movie)
 
     #scores = [(movie, calculate_score(user_profile, movie)) for movie in recommendation_list]
     return scores
