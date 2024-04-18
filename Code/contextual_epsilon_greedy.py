@@ -4,8 +4,19 @@ class ContextualEpsilonGreedy:
     def __init__(self, epsilon, connection):
         self.epsilon = epsilon  # exploration rate
         self.connection = connection
+        self.min_epsilon = 0.001
+        self.epsilon_decay = 0.90
         self.movie_scores = {}  # Keep track of average scores for each movie
         self.genres_scores = {} # Keep track of average scores for each genre
+
+    def update_epsilon(self):
+        self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
+    
+    def explore_or_exploit(self, available_movies):
+        if random.random() < self.epsilon:
+            return self.explore_random_movie(available_movies)
+        else:
+            return self.exploit_movie(available_movies)
 
     def explore_random_movie(self, available_movies): 
         best_movie = random.choice(available_movies)
@@ -43,9 +54,6 @@ class ContextualEpsilonGreedy:
         # Extract the top 10 movie ids (assuming the scores are the second element in the tuple)
         best_movies = [movie_id for movie_id, score in sorted_movies[:10]]
         
-        # Optionally, return the actual movie objects if you have a way to retrieve them using their IDs
-        # For example, if you have a method to get movie objects by ID:
-        # best_movie_objects = [self.get_movie_by_id(movie_id) for movie_id in best_movies]
         
         return best_movies
     

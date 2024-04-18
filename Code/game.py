@@ -26,7 +26,6 @@ class GameSession:
             self.available_movies = [m for m in self.available_movies if m.movie_id != movie.movie_id]
             #if self.epsilon_greedy != None:
             #    self.epsilon_greedy.update_score(movie.movie_id, self.score)
-            self.user_update_score()
             self.algorithm_update_score(movie)
         else:
             print("Movie not in available_movies, cannot add to recommendation list.")
@@ -40,17 +39,25 @@ class GameSession:
             self.algorithm_update_score(selected_movie)
         else:
             if self.learning_phase:
-                self.learning_phase = False
-                temp_recommendation_list = self.epsilon_greedy.select_10_best_movie_on_score()
-                self.recommendation_list = [fetch_movie_by_id(movie_id, self.epsilon_greedy.connection) for movie_id in temp_recommendation_list]
-                self.available_movies = [m for m in self.available_movies if m.movie_id not in temp_recommendation_list]
-                self.update_score()  # Update and record score right after filling the recommendation list
-                print("Initial recommendation list after learning phase:")
+                if len(self.recommendation_list) < self.MAX_RECOMMENDATIONS:
+                    for _ in range(self.MAX_RECOMMENDATIONS - len(self.recommendation_list)):
+                        selected_movie = random.choice(self.available_movies)
+                        self.recommendation_list.append(selected_movie)
+                        self.available_movies.remove(selected_movie)
+                        self.algorithm_update_score(selected_movie)
+                    self.learning_phase = False
+                else: 
+                    self.learning_phase = False
+                    temp_recommendation_list = self.epsilon_greedy.select_10_best_movie_on_score()
+                    self.recommendation_list = [fetch_movie_by_id(movie_id, self.epsilon_greedy.connection) for movie_id in temp_recommendation_list]
+                    self.available_movies = [m for m in self.available_movies if m.movie_id not in temp_recommendation_list]
+                    self.update_score()  # Update and record score right after filling the recommendation list
+                print("Initial recommendation list:")
                 for movie in self.recommendation_list:
                     print(movie.title, self.epsilon_greedy.get_movie_score(movie))
 
             # Perform either exploration or exploitation
-            selected_movie = random.choice(self.available_movies) if random.random() < self.epsilon_greedy.epsilon else self.epsilon_greedy.exploit_movie(self.available_movies)
+            selected_movie = self.epsilon_greedy.explore_or_exploit(self.available_movies)
             
             # Replace the last movie in the recommendation list
             last_movie = self.recommendation_list.pop()
