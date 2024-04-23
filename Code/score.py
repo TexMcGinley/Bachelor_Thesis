@@ -1,13 +1,17 @@
 
 def calculate_score(user_profile, movie):
     # Weights for each score. These can be adjusted as needed:
-    weight_genre = 10
+    weight_genre = 1
     weight_rating = 0
     weight_recency = 0
-    weight_certification = 7
+    weight_certification = 0
 
     # Calculate genre score
-    genre_score = sum(user_profile.genre_preferences.get(genre, 0) for genre in movie.genres) / len(movie.genres)    
+    # print("movie :", movie.title)
+    # for genre in movie.genres:
+    #     print("genre: ", genre) 
+    genre_score = sum(user_profile.genre_preferences.get(genre, 0) for genre in movie.genres) / len(movie.genres)   
+    # print("genre_score: ", genre_score) 
     rating_score = movie.rating
 
     # Calculate recency score (example calculation)

@@ -5,7 +5,7 @@ class ContextualEpsilonGreedy:
         self.epsilon = epsilon  # exploration rate
         self.connection = connection
         self.min_epsilon = 0.001
-        self.epsilon_decay = 0.90
+        self.epsilon_decay = 0.995
         self.movie_scores = {}  # Keep track of average scores for each movie
         self.genres_scores = {} # Keep track of average scores for each genre
 
@@ -26,6 +26,8 @@ class ContextualEpsilonGreedy:
     def exploit_movie(self, available_movies):
         # Exploitation: Pick the best movie based on genre scores
         best_movie = max(available_movies, key=lambda m: self.calculate_expected_movie_score(m))
+        # print("movie selected based on genre score: ", best_movie.title)
+        # print("expected score: ", self.calculate_expected_movie_score(best_movie))
         return best_movie
     
     def calculate_expected_movie_score(self, movie):
@@ -35,15 +37,18 @@ class ContextualEpsilonGreedy:
         
         total_score = 0
         genre_count = 0
+        #print("movie: ", movie.title)
         for genre in movie.genres:
             if genre in self.genres_scores:
+                #print("genre in movie and genres scores: ", genre)
                 score, count = self.genres_scores[genre]
                 if count > 0:  # Ensure that there is at least one count to avoid division by zero
-                    total_score += score / count
+                    total_score += score 
                     genre_count += 1
 
         if genre_count == 0:
             return 0  # Avoid division by zero if no genre counts are available
+        #print("total score: ", total_score / genre_count)
         return total_score / genre_count  # Return the average score per genre
     
     def select_10_best_movie_on_score(self):
@@ -56,6 +61,19 @@ class ContextualEpsilonGreedy:
         
         
         return best_movies
+
+    def return_ranked_movie(self, postion):
+        # Assuming movie_scores is a dictionary with movie_id as keys and scores as values
+        # Sort movies based on scores in descending order
+        sorted_movies = sorted(self.movie_scores.items(), key=lambda item: item[1], reverse=True)
+        
+        # Extract the top 10 movie ids (assuming the scores are the second element in the tuple)
+        best_movie = sorted_movies[postion]
+        return sorted_movies[postion][0]
+    
+    # def select_10_best_movie_on_genre_score(self):
+    #     sorted_movies = sorted(self.genres_scores.items(), key=lambda item: item[1], reverse=True)
+    #     best_movies = [movie_id for movie_id, score in sorted_movies[:10]]
     
     def get_movie_score(self, movie):
         return self.movie_scores.get(movie.movie_id, (0, 0))[0]
@@ -65,36 +83,36 @@ class ContextualEpsilonGreedy:
         
     def update_score(self, movie, score):
         # Update the movie's average score
-        self.calculate_movie_genre_score(movie, score)
-        if movie.movie_id in self.movie_scores:
-            old_score, count = self.movie_scores[movie.movie_id]
-            new_score = (old_score * count + score) / (count + 1)
-            self.movie_scores[movie.movie_id] = (new_score, count + 1)
+        #self.calculate_movie_genre_score(movie)
+        if movie.movie_id in self.movie_scores: # If the movie is already in the table, update the score
+            old_score, count = self.movie_scores[movie.movie_id] # Get the old score and count
+            new_score = (old_score * count + score) / (count + 1) # The new score is calculated using a running average 
+            self.movie_scores[movie.movie_id] = (new_score, count + 1) # Update the movie score and count
         else:
-            self.movie_scores[movie.movie_id] = (score, 1)
+            self.movie_scores[movie.movie_id] = (score, 1) # Initialize the movie score if it does not exist
     
-    def calculate_movie_genre_score(self, movie, score):
+    def calculate_movie_genre_score(self, movie):
         # Calculate the average score of the movie based on its genres
-        if not movie.genres or all(genre not in self.genres_scores for genre in movie.genres):
+        if not movie.genres or all(genre not in self.genres_scores for genre in movie.genres): # if there are no genres or no genre scores available
             return 0  # Default score if no genre information is available
         
         total_score, genre_count = 0, 0
-        for genre in movie.genres:
-            if genre in self.genres_scores:
-                score, count = self.genres_scores[genre]
-                total_score += score
-                genre_count += 1
+        for genre in movie.genres: # Calculate the total score of the movie based on its genres
+            if genre in self.genres_scores: # If the genre is in the table, add the score to the total
+                score, count = self.genres_scores[genre] # Get the genre score and count
+                total_score += score # Add the genre score to the total
+                genre_count += 1 # Increment the genre count
 
-        return total_score / genre_count if genre_count > 0 else 0
+        return total_score / genre_count if genre_count > 0 else 0 # Return the average score if there are genres, else return 0
 
 
     def update_genre_score(self, genre, score):
-        if genre in self.genres_scores:
-            old_score, count = self.genres_scores[genre]
-            new_score = (old_score * count + score) / (count + 1)
-            self.genres_scores[genre] = (new_score, count + 1)
+        if genre in self.genres_scores: # If the genre is already in the table, update the score
+            old_score, count = self.genres_scores[genre] # Get the old score and count
+            new_score = (old_score * count + score) / (count + 1) # Calculate the new score using a running average
+            self.genres_scores[genre] = (new_score, count + 1) # Update the genre score
         else:
-            self.genres_scores[genre] = (score, 1)
+            self.genres_scores[genre] = (score, 1) # Initialize the genre score if it does not exist
     
     def cold_start(self, movie):
         # Create a table of genre scores based on previously watched movies

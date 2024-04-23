@@ -9,11 +9,18 @@ from statistics import mean
 
 def plot_scores(scores):
     plt.figure(figsize=(10, 5))  # Set the figure size as needed
-    plt.plot(scores, marker='o', linestyle='-', color='b')
+    plt.plot(scores[0], marker='o', linestyle='-', color='b', label = 'e = 0.1')
+    plt.plot(scores[1], marker='o', linestyle='-', color='r', label = 'e = 0.2')
+    plt.plot(scores[2], marker='o', linestyle='-', color='g', label = 'e = 0.3')   
+    plt.plot(scores[3], marker='o', linestyle='-', color='y', label = 'e = 0.4')
+    plt.plot(scores[4], marker='o', linestyle='-', color='c', label = 'e = 0.5')
+    plt.plot(scores[5], marker='o', linestyle='-', color='m', label = 'e = 0.6')
+    plt.plot(scores[6], marker='o', linestyle='-', color='k', label = 'e = 0.7')
     plt.title("Average Score Over Time During Simulation")
     plt.xlabel("Block of 10 Iterations")
     plt.ylabel("Average Score")
     plt.grid(True)
+    plt.legend()
     plt.show()
 
 
@@ -28,8 +35,8 @@ def main():
     #certification_preferences = {'G': 5, 'PG': 5, 'PG-13': 5, 'R': 5, 'NC-17': 5, 'N': 5}
     
     #genre_preferences = create_genre_preferences(10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10)
-    genre_preferences = create_genre_preferences(10, 10, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    #genre_preferences = create_genre_preferences(8, 5, 6, 7, 4, 9, 3, 2, 1, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4)
+    #genre_preferences = create_genre_preferences(0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    genre_preferences = create_genre_preferences(8, 5, 6, 7, 4, 9, 3, 2, 1, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4)
 
     user1 = create_user_profile(name, age, location, device_type, account_age, genre_preferences, certification_preferences, [])
     watched_movies_ids = [13, 28, 73, 101]  # Example movie IDs
@@ -37,34 +44,56 @@ def main():
     user1.set_watched_movies(watched_movies_ids, connection)
 
     #epsilon_greedy = EpsilonGreedy(0.4, connection)
-    epsilon_greedy = ContextualEpsilonGreedy(1, connection)
+    epsilon_greedy = ContextualEpsilonGreedy(0.1, connection)
     all_movie_ids = [row[0] for row in fetch_movies(connection)]
     all_movies = [fetch_movie_by_id(movie_id, connection) for movie_id in all_movie_ids]
 
-    game = create_game_session(user1, epsilon_greedy, all_movies, 0)
+    #game = create_game_session(user1, epsilon_greedy, all_movies, 0)
 
-    game.epsilon_greedy.initialize_genre_table()
+    #game.epsilon_greedy.initialize_genre_table()
 
-    for i in range(100):
-        game.add_movie_by_algorithm()
+    # for i in range(100):
+    #     game.add_movie_by_algorithm()
     
-    score_blocks = []
-    for i in range(1000):  # You can adjust the total iterations
-        game.add_movie_by_algorithm()
-        if i == 1:
-            score_blocks.append(0)
-        if i % 10 == 9:  # Collect scores every 10 iterations
-            average_score = mean(game.scores[-10:])  # Calculate average of the last 10 scores
-            score_blocks.append(average_score)
-            print(f"Average score for iterations {i-9} to {i}: {average_score}")
+    # score_blocks = []
+    # for i in range(500):  # You can adjust the total iterations
+    #     game.add_movie_by_algorithm()
+    #     if i == 1:
+    #         score_blocks.append(0)
+    #     if i % 10 == 9:  # Collect scores every 10 iterations
+    #         average_score = mean(game.scores[-10:])  # Calculate average of the last 10 scores
+    #         score_blocks.append(average_score)
+    #         print(f"Average score for iterations {i-9} to {i}: {average_score}")
 
-    print("Final recommendation list:")
-    for movie in game.recommendation_list:
-        print(movie.title, "with genres:", ", ".join(movie.genres))
+    # print("Final recommendation list:")
+    # for movie in game.recommendation_list:
+    #     print(movie.title, "with genres:", ", ".join(movie.genres))
+    epsilon_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+    score_blocks2 = []
+    for e in epsilon_values:
 
-    plot_scores(score_blocks)
+        epsilon_greedy = ContextualEpsilonGreedy(e, connection)
+        game2 = create_game_session(user1, epsilon_greedy, all_movies, 0)
+        game2.epsilon_greedy.initialize_genre_table()
+
+        # for i in range(100):
+        #     game.add_movie_by_algorithm()
+        
+        temp_score_blocks = []
+        for i in range(500):  # You can adjust the total iterations
+            game2.add_movie_by_algorithm()
+            if i == 1:
+                temp_score_blocks.append(0)
+            if i % 10 == 9:  # Collect scores every 10 iterations
+                average_score = mean(game2.scores[-10:])  # Calculate average of the last 10 scores
+                temp_score_blocks.append(average_score)
+        score_blocks2.append(temp_score_blocks)
+        # print("\n Genre score table for epsilon = ", e)
+        # game2.epsilon_greedy.print_genre_table()
+
+    plot_scores(score_blocks2)
     
-    # game.epsilon_greedy.print_genre_table() 
+    game2.epsilon_greedy.print_genre_table() 
     # best_movies = game.epsilon_greedy.select_10_best_movie_on_score()
     # game.recommendation_list = [fetch_movie_by_id(movie_id, game.epsilon_greedy.connection) for movie_id in best_movies]
 
