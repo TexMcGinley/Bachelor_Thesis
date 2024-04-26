@@ -69,7 +69,7 @@ class ContextualEpsilonGreedy:
         
         # Extract the top 10 movie ids (assuming the scores are the second element in the tuple)
         best_movie = sorted_movies[postion]
-        return sorted_movies[postion][0]
+        return sorted_movies[postion][0].moive_id
     
     # def select_10_best_movie_on_genre_score(self):
     #     sorted_movies = sorted(self.genres_scores.items(), key=lambda item: item[1], reverse=True)

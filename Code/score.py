@@ -6,15 +6,10 @@ def calculate_score(user_profile, movie):
     weight_recency = 0
     weight_certification = 0
 
-    # Calculate genre score
-    # print("movie :", movie.title)
-    # for genre in movie.genres:
-    #     print("genre: ", genre) 
+
     genre_score = sum(user_profile.genre_preferences.get(genre, 0) for genre in movie.genres) / len(movie.genres)   
-    # print("genre_score: ", genre_score) 
     rating_score = movie.rating
 
-    # Calculate recency score (example calculation)
     current_year = 2024  # This could be dynamic
     movie_year = int(movie.release_date[:4])  # Assuming release_date is a string in 'YYYY-MM-DD' format
     recency_score = 1 - (current_year - movie_year) / 100  # Example calculation
