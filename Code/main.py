@@ -56,7 +56,7 @@ def main():
 
         
         temp_score_blocks = []
-        for i in range(200):  # You can adjust the total iterations
+        for i in range(100):  # You can adjust the total iterations
             game.add_movie_by_algorithm()
             if i == 1:
                 temp_score_blocks.append(0)
