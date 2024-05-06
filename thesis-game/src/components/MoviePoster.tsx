@@ -48,35 +48,3 @@ function MoviePoster({
 }
 
 export default MoviePoster;
-
-// const MoviePoster = ({ title, imageUrl, releaseDate }: Props) => {
-//   const [isHovered, setIsHovered] = useState(false);
-
-//   const handleMouseEnter = () => {
-//     setIsHovered(true);
-//   };
-
-//   const handleMouseLeave = () => {
-//     setIsHovered(false);
-//   };
-
-//   return (
-//     <div
-//       className="movie-poster"
-//       onMouseEnter={handleMouseEnter}
-//       onMouseLeave={handleMouseLeave}
-//     >
-//       <img
-//         src={imageUrl}
-//         alt={title}
-//         style={{ width: "200px", height: "300px" }} // Adjust width and height as needed
-//       />
-//       {isHovered && (
-//         <div className="movie-details">
-//           <h2>{title}</h2>
-//           <p>Release Date: {releaseDate}</p>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };

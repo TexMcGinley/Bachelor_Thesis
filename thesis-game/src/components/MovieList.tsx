@@ -3,6 +3,7 @@ import "./MovieList.css";
 
 interface Props {
   movies: {
+    id: string;
     title: string;
     imageUrl: string;
     releaseDate: string;
@@ -15,9 +16,9 @@ interface Props {
 function MovieList({ movies }: Props) {
   return (
     <div className="movie-list">
-      {movies.map((movie, index) => (
+      {movies.map((movie) => (
         <MoviePoster
-          key={index}
+          key={movie.id} // Using the movie's unique identifier as the key
           title={movie.title}
           imageUrl={movie.imageUrl}
           releaseDate={movie.releaseDate}
