@@ -11,12 +11,16 @@ export const Movie = ({
   genres,
   rating,
   certification,
+  rank, // Accept rank as a prop
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
   const style = {
     transition,
     transform: CSS.Transform.toString(transform),
+    // Optional: Adjust opacity or border if rank is -1
+    opacity: rank === -1 ? 0.5 : 1,
+    border: rank === -1 ? "2px dashed red" : "none",
   };
 
   const [isFlipped, setIsFlipped] = useState(false);
