@@ -145,65 +145,69 @@ export default function App() {
   const handleDragEnd = (event) => {
     const { active, over } = event;
 
-    console.log("Drag End Event:", { active, over });
-
-    if (!over || !active.data.current || !over.data.current) {
-      console.error("Drop event missing data");
+    if (!over) {
+      console.error("Drop event missing target.");
       return;
     }
 
-    // Assume 'movies' is the default container for the grid and 'recommendations' for the ranking slots
-    const fromContainer =
-      active.data.current.sortable.containerId === "movies"
-        ? "movies"
-        : "recommendations";
-    const toContainer = over.data.current.sortable.containerId.includes("slot")
-      ? "recommendations"
-      : "movies";
+    const fromId = active.id;
+    const toId = over.id;
 
-    console.log(
-      `Resolved From Container: ${fromContainer}, To Container: ${toContainer}`
-    );
+    console.log(`Drag End Event from ${fromId} to ${toId}`);
 
-    const fromItems =
-      fromContainer === "movies" ? [...movies] : [...rankedMovies];
-    const fromIndex = fromItems.findIndex((item) => item.id === active.id);
-    const activeItem = fromItems[fromIndex];
+    // Clone arrays for immutability
+    let updatedMovies = [...movies];
+    let updatedRankedMovies = [...rankedMovies];
 
-    if (toContainer === "recommendations") {
-      const toRank = parseInt(over.id.split("-")[1]);
+    // Find index in the original or ranked list
+    const fromIndex = updatedMovies.findIndex((item) => item.id === fromId);
+    const toIndex = toId.startsWith("rank-slot")
+      ? parseInt(toId.split("-")[2])
+      : -1;
 
-      // Check if the slot is already occupied
-      const existingMovieIndex = fromItems.findIndex(
-        (item) => item.rank === toRank
-      );
-      if (existingMovieIndex !== -1) {
-        fromItems[existingMovieIndex].rank = -1; // Move existing movie back to the grid
+    console.log(`From Index: ${fromIndex}, To Index: ${toIndex}`);
+
+    if (fromIndex !== -1) {
+      // Moving from movies to rankings
+      const movie = updatedMovies.splice(fromIndex, 1)[0]; // Remove from movies
+      if (toIndex !== -1) {
+        // Check if the target slot is filled
+        if (updatedRankedMovies[toIndex]) {
+          // Move the existing movie back to movies array
+          updatedMovies.push({ ...updatedRankedMovies[toIndex], rank: -1 });
+          console.log(updatedMovies);
+        }
+        // Place the movie into the ranking slot
+        updatedRankedMovies[toIndex] = { ...movie, rank: toIndex };
+        console.log(updatedRankedMovies);
+      } else {
+        // If dropped outside a valid ranking slot, push back to movies
+        updatedMovies.push(movie);
       }
-
-      // Update rank for the moved item
-      activeItem.rank = toRank;
-      console.log(`Moved movie ${active.id} to rank ${toRank}`);
-    } else if (
-      fromContainer === "recommendations" &&
-      toContainer === "movies"
-    ) {
-      activeItem.rank = -1; // Moving back to movies
-      console.log(`Moved movie ${active.id} back to movies`);
+    } else {
+      // Moving within or out of rankings
+      const rankedIndex = updatedRankedMovies.findIndex(
+        (item) => item.id === fromId
+      );
+      console.log(`Ranked Index: ${rankedIndex}`);
+      if (rankedIndex !== -1) {
+        const movie = updatedRankedMovies[rankedIndex];
+        updatedRankedMovies.splice(rankedIndex, 1); // Remove from current position
+        console.log("update ranked movies: ", updatedRankedMovies);
+        console.log("to index: ", toIndex);
+        if (toIndex !== -1) {
+          // Move within rankings or to a new position
+          updatedRankedMovies[toIndex] = { ...movie, rank: toIndex };
+        } else {
+          // Move back to movies
+          updatedMovies.push({ ...movie, rank: -1 });
+        }
+      }
     }
 
-    // Commit the state changes
-    setMovies(fromItems.filter((item) => item.rank === -1)); // Only non-ranked movies are in the grid
-    setRankedMovies(fromItems.filter((item) => item.rank !== -1)); // Ranked movies are in the rankings
-
-    console.log(
-      "Updated Movies:",
-      fromItems.filter((item) => item.rank === -1)
-    );
-    console.log(
-      "Updated Ranked Movies:",
-      fromItems.filter((item) => item.rank !== -1)
-    );
+    // Update states
+    setMovies(updatedMovies);
+    setRankedMovies(updatedRankedMovies);
   };
 
   const sensors = useSensors(
@@ -225,9 +229,7 @@ export default function App() {
           onDragEnd={handleDragEnd}
           collisionDetection={closestCorners}
         >
-          <RecommendationRanking
-            movies={movies.filter((movie) => movie.rank !== -1)}
-          />
+          <RecommendationRanking movies={rankedMovies} />
           <Column movies={movies} />
         </DndContext>
       </div>
