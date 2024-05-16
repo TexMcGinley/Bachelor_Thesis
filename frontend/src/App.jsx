@@ -8,6 +8,7 @@ import {
   TouchSensor,
   KeyboardSensor,
   useSensors,
+  closestCenter,
 } from "@dnd-kit/core";
 import { Column } from "./components/Column/Column";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
@@ -138,12 +139,26 @@ export default function App() {
     },
   ]);
 
-  const [rankedMovies, setRankedMovies] = useState([]);
+  const [rankedMovies, setRankedMovies] = useState([
+    // {
+    //   id: "27",
+    //   title: "Forest Gump",
+    //   imageUrl:
+    //     "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
+    //   releaseDate: "11/09/2002",
+    //   genres: ["Drama", "Romance"],
+    //   rating: 8.8,
+    //   certification: "PG-13",
+    //   rank: 0,
+    // },
+  ]);
 
   const getMoviePos = (id) => movies.findIndex((movie) => movie.id === id);
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
+
+    console.log(rankedMovies);
 
     if (!over) {
       console.error("Drop event missing target.");
@@ -155,59 +170,79 @@ export default function App() {
 
     console.log(`Drag End Event from ${fromId} to ${toId}`);
 
-    // Clone arrays for immutability
-    let updatedMovies = [...movies];
-    let updatedRankedMovies = [...rankedMovies];
+    // Create a copy of the rankedMovies with enough slots.
+    let updatedRankedMovies = new Array(10).fill(null);
 
-    // Find index in the original or ranked list
-    const fromIndex = updatedMovies.findIndex((item) => item.id === fromId);
+    for (let i = 0; i < rankedMovies.length; i++) {
+      if (rankedMovies[i] !== null) {
+        if (rankedMovies[i].rank !== undefined && rankedMovies[i].rank !== -1) {
+          updatedRankedMovies[rankedMovies[i].rank] = rankedMovies[i];
+        }
+      } else {
+        updatedRankedMovies[i] = null;
+      }
+    }
+
+    console.log("Initial ranked movies:", updatedRankedMovies);
+
+    let updatedMovies = [...movies];
+    const fromIndex = fromId.startsWith("rank-slot")
+      ? parseInt(fromId.split("-")[2])
+      : updatedMovies.findIndex((item) => item.id === fromId);
     const toIndex = toId.startsWith("rank-slot")
       ? parseInt(toId.split("-")[2])
       : -1;
 
-    console.log(`From Index: ${fromIndex}, To Index: ${toIndex}`);
+    console.log(`fromIndex: ${fromIndex}, toIndex: ${toIndex}`);
 
     if (fromIndex !== -1) {
-      // Moving from movies to rankings
-      const movie = updatedMovies.splice(fromIndex, 1)[0]; // Remove from movies
-      if (toIndex !== -1) {
-        // Check if the target slot is filled
-        if (updatedRankedMovies[toIndex]) {
-          // Move the existing movie back to movies array
-          updatedMovies.push({ ...updatedRankedMovies[toIndex], rank: -1 });
-          console.log(updatedMovies);
-        }
-        // Place the movie into the ranking slot
-        updatedRankedMovies[toIndex] = { ...movie, rank: toIndex };
-        console.log(updatedRankedMovies);
-      } else {
-        // If dropped outside a valid ranking slot, push back to movies
+      const sourceArray = fromId.startsWith("rank-slot")
+        ? updatedRankedMovies
+        : updatedMovies;
+      const movie = sourceArray[fromIndex];
+      sourceArray[fromIndex] = null;
+
+      if (toIndex === -1 && !toId.startsWith("rank-slot")) {
+        // Ensure it's dropped on the movie grid explicitly
+        movie.rank = -1;
         updatedMovies.push(movie);
+      } else {
+        if (updatedRankedMovies[toIndex]) {
+          updatedMovies.push({ ...updatedRankedMovies[toIndex], rank: -1 });
+        }
+        updatedRankedMovies[toIndex] = { ...movie, rank: toIndex };
       }
-    } else {
-      // Moving within or out of rankings
-      const rankedIndex = updatedRankedMovies.findIndex(
-        (item) => item.id === fromId
-      );
-      console.log(`Ranked Index: ${rankedIndex}`);
-      if (rankedIndex !== -1) {
-        const movie = updatedRankedMovies[rankedIndex];
-        updatedRankedMovies.splice(rankedIndex, 1); // Remove from current position
-        console.log("update ranked movies: ", updatedRankedMovies);
-        console.log("to index: ", toIndex);
-        if (toIndex !== -1) {
-          // Move within rankings or to a new position
-          updatedRankedMovies[toIndex] = { ...movie, rank: toIndex };
-        } else {
-          // Move back to movies
-          updatedMovies.push({ ...movie, rank: -1 });
+    }
+
+    const final_ranked_movies = new Array(10).fill(null); // Presuming there are a maximum of 10 ranks.
+
+    for (let i = 0; i < updatedRankedMovies.length; i++) {
+      if (updatedRankedMovies[i] !== null) {
+        console.log("Rank:", updatedRankedMovies[i].rank);
+        if (
+          updatedRankedMovies[i].rank !== undefined &&
+          updatedRankedMovies[i].rank !== -1
+        ) {
+          final_ranked_movies[updatedRankedMovies[i].rank] =
+            updatedRankedMovies[i];
         }
       }
     }
 
-    // Update states
-    setMovies(updatedMovies);
-    setRankedMovies(updatedRankedMovies);
+    console.log("Final ranked movies:", final_ranked_movies);
+
+    console.log(
+      "Final movies:",
+      updatedMovies.filter((movie) => movie)
+    );
+    console.log("Final ranked movies:", updatedRankedMovies);
+    console.log(
+      "final ranked movies filtered:",
+      updatedRankedMovies.filter((movie) => movie)
+    );
+
+    setMovies(updatedMovies.filter((movie) => movie));
+    setRankedMovies(updatedRankedMovies.filter((movie) => movie));
   };
 
   const sensors = useSensors(
@@ -227,7 +262,7 @@ export default function App() {
         <DndContext
           sensors={sensors}
           onDragEnd={handleDragEnd}
-          collisionDetection={closestCorners}
+          collisionDetection={closestCenter}
         >
           <RecommendationRanking movies={rankedMovies} />
           <Column movies={movies} />
