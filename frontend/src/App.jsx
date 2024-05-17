@@ -158,8 +158,10 @@ export default function App() {
   const handleDragEnd = (event) => {
     const { active, over } = event;
 
-    console.log(rankedMovies);
+    // Log the current state for debugging
+    console.log("Ranked Movies at start:", rankedMovies);
 
+    // Prevent handling if there is no target
     if (!over) {
       console.error("Drop event missing target.");
       return;
@@ -168,96 +170,85 @@ export default function App() {
     const fromId = active.id;
     const toId = over.id;
 
+    // Debug output for tracking drag events
     console.log(`Drag End Event from ${fromId} to ${toId}`);
 
-    // Create a copy of the rankedMovies with enough slots.
-    let updatedRankedMovies = new Array(10).fill(null);
+    // Avoid processing if the item is dropped back to its original position
+    if (fromId === toId) {
+      return;
+    }
 
-    for (let i = 0; i < rankedMovies.length; i++) {
-      if (rankedMovies[i] !== null) {
-        if (rankedMovies[i].rank !== undefined && rankedMovies[i].rank !== -1) {
-          updatedRankedMovies[rankedMovies[i].rank] = rankedMovies[i];
-        }
-      } else {
-        updatedRankedMovies[i] = null;
+    // Copy of the current movies state
+    let updatedMovies = [...movies];
+
+    // Handle reordering within the movie grid itself
+    if (!fromId.startsWith("rank-slot") && !toId.startsWith("rank-slot")) {
+      console.log("Reordering movies within the grid");
+      const fromIndex = getMoviePos(fromId);
+      const toIndex = getMoviePos(toId);
+      if (fromIndex > -1 && toIndex > -1) {
+        updatedMovies = arrayMove(updatedMovies, fromIndex, toIndex);
+        setMovies(updatedMovies);
+        return;
       }
     }
 
+    // Prepare the structure for ranked movies
+    let updatedRankedMovies = new Array(10).fill(null);
+    rankedMovies.forEach((movie, index) => {
+      if (movie && movie.rank !== undefined && movie.rank !== -1) {
+        updatedRankedMovies[movie.rank] = movie;
+      }
+    });
+
+    // Debugging the initial state of ranked movies after setup
     console.log("Initial ranked movies:", updatedRankedMovies);
 
-    let updatedMovies = [...movies];
+    // Determine the source and target indices based on IDs
     const fromIndex = fromId.startsWith("rank-slot")
-      ? parseInt(fromId.split("-")[2])
+      ? parseInt(fromId.split("-")[2], 10)
       : updatedMovies.findIndex((item) => item.id === fromId);
     const toIndex = toId.startsWith("rank-slot")
-      ? parseInt(toId.split("-")[2])
+      ? parseInt(toId.split("-")[2], 10)
       : -1;
 
+    // More debugging output for index determination
     console.log(`fromIndex: ${fromIndex}, toIndex: ${toIndex}`);
 
+    // Handle moving movies between and within rankings and the grid
     if (fromIndex !== -1) {
-      // Determine the source array based on whether the movie is currently in the ranking slots or in the movie grid
       const sourceArray = fromId.startsWith("rank-slot")
-        ? updatedRankedMovies // Source is ranked movies if 'fromId' indicates a rank slot
-        : updatedMovies; // Source is unranked movies otherwise
-
-      // Retrieve the movie object from the source array
+        ? updatedRankedMovies
+        : updatedMovies;
       const movie = sourceArray[fromIndex];
-      sourceArray[fromIndex] = null; // Clear the original position in the source array
+      sourceArray[fromIndex] = null; // Clear the original position
 
       if (toIndex !== -1) {
-        // If the movie is being dropped into another rank slot
-        if (updatedRankedMovies[toIndex]) {
-          // Check if there is already a movie in the target rank slot
-          console.log("Movie already in target rank");
-          // Move the existing movie in the target slot back to the movie grid
-          updatedMovies.push({ ...updatedRankedMovies[toIndex], rank: -1 });
+        const targetMovie = updatedRankedMovies[toIndex];
+        if (targetMovie) {
+          console.log("Swapping movies in rank slots");
+          updatedRankedMovies[fromIndex] = targetMovie; // Swap the positions
+          targetMovie.rank = fromIndex;
         }
-        // Place the dragged movie into the target rank slot
         updatedRankedMovies[toIndex] = { ...movie, rank: toIndex };
       } else {
-        // If the movie is being dropped outside any rank slot (e.g., back to the movie grid)
-        // Reset its rank to -1 indicating it is not in the ranked list
-        updatedMovies.push({ ...movie, rank: -1 });
-      }
-    } else if (fromIndex === -1) {
-      // If the from movie is in the recommendation ranking
-      if (toIndex === -1) {
-        // If the movie is being dropped outside any rank slot (e.g., back to the movie grid)
-      } else if (toIndex !== -1) {
-        // If the movie is being dropped into another rank slot
+        updatedMovies.push({ ...movie, rank: -1 }); // Reset rank if dropped outside a rank slot
       }
     }
 
-    const final_ranked_movies = new Array(10).fill(null); // Presuming there are a maximum of 10 ranks.
+    // Finalize the ranked movies array
+    const final_ranked_movies = updatedRankedMovies.filter(
+      (movie) => movie !== null
+    );
 
-    for (let i = 0; i < updatedRankedMovies.length; i++) {
-      if (updatedRankedMovies[i] !== null) {
-        console.log("Rank:", updatedRankedMovies[i].rank);
-        if (
-          updatedRankedMovies[i].rank !== undefined &&
-          updatedRankedMovies[i].rank !== -1
-        ) {
-          final_ranked_movies[updatedRankedMovies[i].rank] =
-            updatedRankedMovies[i];
-        }
-      }
-    }
-
+    // Output the final state of movies for verification
     console.log("Final ranked movies:", final_ranked_movies);
+    console.log("Final movies:", updatedMovies);
+    console.log("Final ranked movies state:", updatedRankedMovies);
 
-    console.log(
-      "Final movies:",
-      updatedMovies.filter((movie) => movie)
-    );
-    console.log("Final ranked movies:", updatedRankedMovies);
-    console.log(
-      "final ranked movies filtered:",
-      updatedRankedMovies.filter((movie) => movie)
-    );
-
-    setMovies(updatedMovies.filter((movie) => movie));
-    setRankedMovies(final_ranked_movies.filter((movie) => movie));
+    // Update the state with new arrays
+    setMovies(updatedMovies.filter((movie) => movie !== null));
+    setRankedMovies(final_ranked_movies);
   };
 
   const sensors = useSensors(

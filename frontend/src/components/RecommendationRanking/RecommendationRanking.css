@@ -22,7 +22,7 @@
   position: relative;
   width: 100%; /* Fill the container */
   height: 100%; /* Fill the container */
-  border: 2px dashed #ccc;
+  /* border: 2px dashed #ccc; */
   display: flex;
   justify-content: center;
   align-items: center;
