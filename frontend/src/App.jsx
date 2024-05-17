@@ -196,21 +196,36 @@ export default function App() {
     console.log(`fromIndex: ${fromIndex}, toIndex: ${toIndex}`);
 
     if (fromIndex !== -1) {
+      // Determine the source array based on whether the movie is currently in the ranking slots or in the movie grid
       const sourceArray = fromId.startsWith("rank-slot")
-        ? updatedRankedMovies
-        : updatedMovies;
-      const movie = sourceArray[fromIndex];
-      sourceArray[fromIndex] = null;
+        ? updatedRankedMovies // Source is ranked movies if 'fromId' indicates a rank slot
+        : updatedMovies; // Source is unranked movies otherwise
 
-      if (toIndex === -1 && !toId.startsWith("rank-slot")) {
-        // Ensure it's dropped on the movie grid explicitly
-        movie.rank = -1;
-        updatedMovies.push(movie);
-      } else {
+      // Retrieve the movie object from the source array
+      const movie = sourceArray[fromIndex];
+      sourceArray[fromIndex] = null; // Clear the original position in the source array
+
+      if (toIndex !== -1) {
+        // If the movie is being dropped into another rank slot
         if (updatedRankedMovies[toIndex]) {
+          // Check if there is already a movie in the target rank slot
+          console.log("Movie already in target rank");
+          // Move the existing movie in the target slot back to the movie grid
           updatedMovies.push({ ...updatedRankedMovies[toIndex], rank: -1 });
         }
+        // Place the dragged movie into the target rank slot
         updatedRankedMovies[toIndex] = { ...movie, rank: toIndex };
+      } else {
+        // If the movie is being dropped outside any rank slot (e.g., back to the movie grid)
+        // Reset its rank to -1 indicating it is not in the ranked list
+        updatedMovies.push({ ...movie, rank: -1 });
+      }
+    } else if (fromIndex === -1) {
+      // If the from movie is in the recommendation ranking
+      if (toIndex === -1) {
+        // If the movie is being dropped outside any rank slot (e.g., back to the movie grid)
+      } else if (toIndex !== -1) {
+        // If the movie is being dropped into another rank slot
       }
     }
 
@@ -242,7 +257,7 @@ export default function App() {
     );
 
     setMovies(updatedMovies.filter((movie) => movie));
-    setRankedMovies(updatedRankedMovies.filter((movie) => movie));
+    setRankedMovies(final_ranked_movies.filter((movie) => movie));
   };
 
   const sensors = useSensors(

@@ -1,29 +1,53 @@
 .ranking-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  column-gap: 10px;
+  row-gap: 20px;
   padding: 20px;
 }
 
 .droppable-container {
+  position: relative; /* Set relative positioning for child absolute positioning */
+  align-items: center;
+  justify-content: center;
+  width: 202px; /* Match width with the droppable area */
+  height: 302px; /* Match height with the droppable area */
+  border: 1px solid red; /* Temporary for debugging */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .droppable-area {
+  position: relative;
+  width: 100%; /* Fill the container */
+  height: 100%; /* Fill the container */
   border: 2px dashed #ccc;
-  width: 200px;  /* Adjust width as needed */
-  height: 300px; /* Adjust height as needed */
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f0f0f0;
+  background-color: transparent;
+  z-index: 10; /* Ensure it is above the movie visually */
+}
+
+.movie-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%; /* Ensure full coverage */
+  height: 100%; /* Ensure full coverage */
+  pointer-events: none; /* Disable pointer events to allow clicks to pass through */
+  z-index: 0; /* Under the droppable area */
 }
 
 .rank-label {
-  margin-top: 5px;
+  position: absolute;
+  bottom: 5px; /* Position at the bottom of the container */
+  width: 100%; /* Full width */
+  text-align: center;
   font-size: 16px;
   font-weight: bold;
   color: #333;
+  pointer-events: auto; /* Ensure clickable */
+  z-index: 10; /* Above all to ensure it's clickable */
 }
