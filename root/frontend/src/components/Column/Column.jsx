@@ -15,15 +15,16 @@ export const Column = ({ movies }) => {
         id="movies"
       >
         {movies.map((movie) => (
+          // console.log("Movie Data:", movie.title, movie.imageUrl),
           <Movie
+            key={movie.id}
             id={movie.id}
             title={movie.title}
-            imageUrl={movie.imageUrl}
-            releaseDate={movie.releaseDate}
-            genres={movie.genres}
-            rating={movie.rating}
-            certification={movie.certification}
-            key={movie.id}
+            imageUrl={movie.imageUrl} // default image if none
+            releaseDate={movie.releaseDate || "Unknown date"}
+            genres={movie.genres || []} // ensure genres is always an array
+            rating={movie.rating || "NR"} // 'NR' for Not Rated
+            certification={movie.certification || "Not certified"}
           />
         ))}
       </SortableContext>

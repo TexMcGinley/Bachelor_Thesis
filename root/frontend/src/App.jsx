@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 import {
   DndContext,
@@ -15,129 +15,33 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { RecommendationRanking } from "./components/RecommendationRanking/RecommendationRanking";
 
 export default function App() {
-  const [movies, setMovies] = useState([
-    {
-      id: "1",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: -1,
-    },
-    {
-      id: "2",
-      title: "The Shawshank Redemption",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg",
-      releaseDate: "1994",
-      genres: ["Drama"],
-      rating: 9.3,
-      certification: "R",
-      rank: -1,
-    },
-    {
-      id: "3",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: -1,
-    },
-    {
-      id: "4",
-      title: "The Shawshank Redemption",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg",
-      releaseDate: "1994",
-      genres: ["Drama"],
-      rating: 9.3,
-      certification: "R",
-      rank: -1,
-    },
-    {
-      id: "5",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: -1,
-    },
-    {
-      id: "21",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: -1,
-    },
-    {
-      id: "22",
-      title: "The Shawshank Redemption",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg",
-      releaseDate: "1994",
-      genres: ["Drama"],
-      rating: 9.3,
-      certification: "R",
-      rank: -1,
-    },
-    {
-      id: "23",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: -1,
-    },
-    {
-      id: "24",
-      title: "The Shawshank Redemption",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg",
-      releaseDate: "1994",
-      genres: ["Drama"],
-      rating: 9.3,
-      certification: "R",
-      rank: -1,
-    },
-    {
-      id: "25",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: -1,
-    },
-    {
-      id: "26",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: -1,
-    },
-  ]);
+  const [movies, setMovies] = useState([]);
+
+  useEffect(() => {
+    if (window.api && window.api.fetchMovies) {
+      window.api
+        .fetchMovies()
+        .then((data) => {
+          // Process the movie data if it's in the form of an array of arrays
+          const processedMovies = data.map((movie) => ({
+            id: `${movie["movie_id"]}`, // Assuming the first element is the ID
+            title: movie["title"],
+            releaseDate: movie["release_date"],
+            rating: movie["rating"],
+            certification: movie["certification"],
+            genres: movie.genres ? movie.genres.split(",") : [],
+            imageUrl: movie["poster_path"], // Adjust the indices according to your data structure
+            rank: -1, // Initialize the rank to -1
+          }));
+          console.log("Processed Movies:", processedMovies);
+          setMovies(processedMovies);
+          // console.log("Movies id:", `${movies[0]["id"]}`);
+        })
+        .catch(console.error);
+    } else {
+      console.log("API not available, running in non-Electron environment");
+    }
+  }, []);
 
   const [rankedMovies, setRankedMovies] = useState([
     // {
@@ -167,8 +71,8 @@ export default function App() {
       return;
     }
 
-    const fromId = active.id;
-    const toId = over.id;
+    const fromId = `${active.id}`;
+    const toId = `${over.id}`;
 
     // Debug output for tracking drag events
     console.log(`Drag End Event from ${fromId} to ${toId}`);
