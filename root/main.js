@@ -23,7 +23,7 @@ function createWindow() {
 
   const startUrl = app.isPackaged
     ? `file://${path.join(__dirname, "../build/index.html")}`
-    : "http://localhost:5174"; // Assuming Vite runs on 5174
+    : "http://localhost:5173"; // Assuming Vite runs on 5174
   mainWindow.loadURL(startUrl);
 
   // Open the DevTools automatically if in development

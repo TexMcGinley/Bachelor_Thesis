@@ -56,6 +56,7 @@ const DroppableArea = ({ id, rank, children }) => {
             genres={children.genres}
             rating={children.rating}
             certification={children.certification}
+            isSmall={true} // Adjust size of movie component
           />
         </div>
       )}
@@ -84,7 +85,7 @@ const DroppableArea = ({ id, rank, children }) => {
           bottom: -20,
           width: "100%",
           textAlign: "center",
-          pointerEvents: "auto",
+          pointerEvents: "none",
         }}
       >
         Rank {rank + 1}

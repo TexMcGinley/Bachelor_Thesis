@@ -14,6 +14,8 @@ import { Column } from "./components/Column/Column";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { RecommendationRanking } from "./components/RecommendationRanking/RecommendationRanking";
 import TopBar from "./components/TopBar/TopBar";
+import userIcon from "./assets/images/userIcon.svg";
+import UserBar from "./components/UserBar/UserBar";
 
 export default function App() {
   const [movies, setMovies] = useState([]);
@@ -59,6 +61,102 @@ export default function App() {
   ]);
 
   const getMoviePos = (id) => movies.findIndex((movie) => movie.id === id);
+
+  const [user, setUser] = useState({
+    name: "John Doe",
+    age: 25,
+    location: "New York",
+    deviceTyoe: "Desktop",
+    accountAge: 3,
+    avatar: userIcon,
+  });
+
+  const [watchedMovies, setWatchedMovies] = useState([
+    {
+      id: "27",
+      title: "Forest Gump",
+      imageUrl:
+        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
+      releaseDate: "11/09/2002",
+      genres: ["Drama", "Romance"],
+      rating: 8.8,
+      certification: "PG-13",
+      rank: 0,
+      isSmall: true,
+    },
+    {
+      id: "33333327",
+      title: "Forest Gump",
+      imageUrl:
+        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
+      releaseDate: "11/09/2002",
+      genres: ["Drama", "Romance"],
+      rating: 8.8,
+      certification: "PG-13",
+      rank: 0,
+      isSmall: true,
+    },
+    {
+      id: "3333327",
+      title: "Forest Gump",
+      imageUrl:
+        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
+      releaseDate: "11/09/2002",
+      genres: ["Drama", "Romance"],
+      rating: 8.8,
+      certification: "PG-13",
+      rank: 0,
+      isSmall: true,
+    },
+    {
+      id: "333327",
+      title: "Forest Gump",
+      imageUrl:
+        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
+      releaseDate: "11/09/2002",
+      genres: ["Drama", "Romance"],
+      rating: 8.8,
+      certification: "PG-13",
+      rank: 0,
+      isSmall: true,
+    },
+    {
+      id: "33327",
+      title: "Forest Gump",
+      imageUrl:
+        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
+      releaseDate: "11/09/2002",
+      genres: ["Drama", "Romance"],
+      rating: 8.8,
+      certification: "PG-13",
+      rank: 0,
+      isSmall: true,
+    },
+    {
+      id: "3327",
+      title: "Forest Gump",
+      imageUrl:
+        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
+      releaseDate: "11/09/2002",
+      genres: ["Drama", "Romance"],
+      rating: 8.8,
+      certification: "PG-13",
+      rank: 0,
+      isSmall: true,
+    },
+    {
+      id: "327",
+      title: "Forest Gump",
+      imageUrl:
+        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
+      releaseDate: "11/09/2002",
+      genres: ["Drama", "Romance"],
+      rating: 8.8,
+      certification: "PG-13",
+      rank: 0,
+      isSmall: true,
+    },
+  ]);
 
   const [score, setScore] = useState(0); // Example score state
 
@@ -209,8 +307,15 @@ export default function App() {
           onDragEnd={handleDragEnd}
           collisionDetection={closestCenter}
         >
-          <RecommendationRanking movies={rankedMovies} />
-          <Column movies={movies} />
+          <div className="recommendationRanking">
+            <RecommendationRanking movies={rankedMovies} />
+          </div>
+          <div className="movieGrid">
+            <Column movies={movies} />
+          </div>
+          <div className="userBar">
+            <UserBar user={user} watchedMovies={watchedMovies} />
+          </div>
         </DndContext>
       </div>
     </div>

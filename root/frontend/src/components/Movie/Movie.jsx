@@ -13,6 +13,7 @@ export const Movie = memo(
     rating,
     certification,
     rank, // Accept rank as a prop
+    isSmall = false, // Accept isSmall as a prop with default value
   }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({ id });
@@ -21,6 +22,14 @@ export const Movie = memo(
       transform: CSS.Transform.toString(transform),
       opacity: rank === -1 ? 0.5 : 1, // Adjust opacity or border if rank is -1
       border: rank === -1 ? "2px dashed red" : "none",
+      width: isSmall ? "90px" : "200px", // Smaller width if isSmall is true
+      height: isSmall ? "135px" : "300px", // Adjust height accordingly
+    };
+
+    const movieStyle = {
+      width: isSmall ? "90px" : "200px", // Smaller width if isSmall is true
+      height: isSmall ? "135px" : "300px", // Adjust height accordingly
+      "font-size": isSmall ? "0.8rem" : "1rem", // Adjust font size accordingly
     };
 
     const [isFlipped, setIsFlipped] = useState(false);
@@ -63,10 +72,10 @@ export const Movie = memo(
           <img
             src={imageUrl || "path/to/default/image.jpg"}
             alt={title}
-            style={{ width: "200px", height: "300px" }}
+            style={movieStyle}
           />
         </div>
-        <div className="back">
+        <div className="back" style={movieStyle}>
           <h2>{title || "No Title"}</h2>
           <p>Release Date: {releaseDate || "Unknown"}</p>
           <p>Genres: {genreText}</p>

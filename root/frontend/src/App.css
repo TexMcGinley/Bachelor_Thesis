@@ -4,7 +4,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* gap: 20px; */
   background-color: #1E1E1E;
 }
 
@@ -16,12 +15,31 @@
 .content {
   display: flex;
   flex-direction: row;
-  align-items: start;
   justify-content: center;
-  gap: 50px;
+  align-items: start;
+  height: calc(100vh - 60px); /* Adjust height considering header height */
   width: 100%;
-  padding: 10px;
-  overflow-x: auto;
+  overflow: hidden; /* Prevents any overflow from content */
 }
 
-/* Ensure other styles remain appropriate for RecommendationRanking and Column */
+.recommendationRanking, .userBar {
+  width: 20%; /* Set fixed width for side columns */
+  height: 100%;
+  overflow: hidden; /* Ensures these sections do not scroll */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+}
+
+.movieGrid {
+  width: 60%; /* Middle section gets larger width */
+  height: 100%;
+  overflow-y: auto; /* Allows scrolling */
+  overflow-x: hidden; /* Keeps horizontal overflow hidden */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Add any specific styles needed for RecommendationRanking and UserBar */
