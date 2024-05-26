@@ -97,7 +97,7 @@ const DroppableArea = ({ id, rank, children }) => {
 export const RecommendationRanking = ({ movies }) => {
   const slots = Array.from({ length: 10 }, (_, index) => {
     const slotId = `rank-slot-${index}`; // Adjusting slot ID to follow a clear pattern
-    const movie = movies.find((m) => m.rank === index);
+    const movie = movies.find((m) => m && m.rank === index); // Ensure movies is defined and then perform find
     return {
       id: slotId,
       movie: movie,

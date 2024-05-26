@@ -9,15 +9,20 @@ const UserBar = ({ user, watchedMovies }) => {
         <div className="user-avatar">
           <img src={user.avatar} alt="User" />
         </div>
+        <div className="user-name">
+          <h2>{user.name}</h2>
+        </div>
         <div className="user-info">
-          <h3>{user.name}</h3>
+          <h3>User Information</h3>
           <p>Age: {user.age}</p>
           <p>Location: {user.location}</p>
           <p>Device type: {user.deviceType}</p>
           <p>Account age: {user.accountAge} years</p>
         </div>
       </div>
-      <h3>Previously Watched Movies</h3>
+      <div className="previously-watched-label">
+        <h3>Previously Watched Movies</h3>
+      </div>
       <div className="previously-watched">
         {watchedMovies.map((movie) => (
           <Movie

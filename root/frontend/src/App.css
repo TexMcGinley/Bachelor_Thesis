@@ -31,6 +31,9 @@
   align-items: center;
   justify-content: start;
 }
+/* .userBar {
+  margin-top: 20px;
+} */
 
 .movieGrid {
   width: 60%; /* Middle section gets larger width */

@@ -3,7 +3,7 @@
     flex-direction: column;
     align-items: center;  /* Center align the user bar contents */
     width: 100%;
-    margin-top: 20px; /* Space between user bar and content */
+    margin-top: 40px; /* Space between user bar and content */
   }
   
   .user-profile {
@@ -21,8 +21,9 @@
   }
   
   .user-info {
-    text-align: center; /* Center the user info text */
+    text-align: left; /* Center the user info text */
     color: white; /* White text */
+    padding-bottom: 75px;
   }
   
   .previously-watched {
@@ -32,10 +33,20 @@
     row-gap: 10px;
     width: 100%;
     padding: 0px 20px; /* Padding on the sides */
+    color: black;
   }
   
   .previously-watched .movie {
     width: 90px; /* Adjust the width of the movie */
     height: 135px; /* Adjust the height based on aspect ratio */
+  }
+
+  .previously-watched-label{
+    color: white;
+  }
+
+  .user-name{
+    color: white;
+    padding-bottom: 50px;
   }
   

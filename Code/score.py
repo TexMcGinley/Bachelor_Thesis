@@ -15,7 +15,7 @@ def calculate_score(user_profile, movie):
     recency_score = 1 - (current_year - movie_year) / 100  # Example calculation
 
     # Calculate age rating score (example calculation)
-    certification_score = user_profile.certification_preferences.get(movie.age_rating, 0) / 5  # Assuming max score is 5
+    certification_score = user_profile.certification_preferences.get(movie.certification, 0) / 5  # Assuming max score is 5
 
     # Combine scores
     total_score = (genre_score * weight_genre +
@@ -33,7 +33,8 @@ def calculate_total_score(user_profile, recommendation_list):
     scores = 0
     # Calculate score for each movie in the recommendation list
     for i, movie in enumerate(recommendation_list):
-        scores += calculate_score(user_profile, movie)
+        if movie != None:
+            scores += calculate_score(user_profile, movie)
 
     #scores = [(movie, calculate_score(user_profile, movie)) for movie in recommendation_list]
     return scores

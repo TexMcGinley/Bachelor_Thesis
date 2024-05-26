@@ -7,6 +7,7 @@ import {
 } from "@dnd-kit/sortable";
 
 export const Column = ({ movies }) => {
+  if (!movies) return null; // Or some loading state
   return (
     <div className="column">
       <SortableContext
