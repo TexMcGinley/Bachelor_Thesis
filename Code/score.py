@@ -37,4 +37,5 @@ def calculate_total_score(user_profile, recommendation_list):
             scores += calculate_score(user_profile, movie)
 
     #scores = [(movie, calculate_score(user_profile, movie)) for movie in recommendation_list]
+    scores = round(scores, 2)
     return scores

@@ -11,6 +11,8 @@ class Movie:
         self.certification = age_rating
         self.poster_path = poster_path
         self.rank = -1 # Default value for rank
+        self.isSmall = False
+        self.watched = False
 
     def __eq__(self, other):
         if not isinstance(other, Movie):
@@ -29,7 +31,9 @@ class Movie:
             "certification": self.certification,
             "genres": self.genres,
             "imageUrl": self.poster_path,
-            "rank": self.rank	
+            "rank": self.rank,
+            "isSmall": self.isSmall,
+            "watched": self.watched
         }
 
 
@@ -47,7 +51,6 @@ def fetch_movies(connection):
         genres = get_genres_for_movie(movie_id, connection)  # Assuming a function to fetch genres
         movies.append(Movie(movie_id, title, genres, rating, release_date, certification, poster_path))
     return movies
-
 
 # def create_movie_objects(movies_data):
 #     movie_objects = []

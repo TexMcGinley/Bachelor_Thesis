@@ -55,22 +55,20 @@ const handleDragEnd = (event) => {
   }
 
   console.log("Initial ranked movies:", updatedRankedMovies);
-  const fromIndex; // Declare variables to store the index of the dragged and target items
-  const toIndex; 
 
   if (fromId.startsWith("rank-slot") && toId.startsWith("rank-slot")) {
     // If both the dragged and target items are rank slots
     console.log("Reordering rank slots");
-    fromIndex = parseInt(fromId.split("-")[2]); // Get the index of the dragged rank slot
-    toIndex = parseInt(toId.split("-")[2]); // Get the index of the target rank slot
+    let fromIndex = parseInt(fromId.split("-")[2]); // Get the index of the dragged rank slot
+    let toIndex = parseInt(toId.split("-")[2]); // Get the index of the target rank slot
     const temp = updatedRankedMovies[fromIndex]; // Store the dragged rank slot in a temporary variable
     updatedRankedMovies[fromIndex] = updatedRankedMovies[toIndex]; // Swap the dragged rank slot with the target rank slot
     updatedRankedMovies[toIndex] = temp; // Place the dragged rank slot in the target rank slot
   } else if (fromId.startsWith("rank-slot") && !toId.startsWith("rank-slot")) {
     // If the dragged item is a ranked movie and the target item is a movie in the grid
     console.log("Moving rank slot to movie");
-    fromIndex = parseInt(fromId.split("-")[2]); // Get the index of the dragged rank slot
-    toIndex = updatedMovies.findIndex((item) => item.id === toId); // Find the index of the target movie in the movie grid
+    let fromIndex = parseInt(fromId.split("-")[2]); // Get the index of the dragged rank slot
+    let toIndex = updatedMovies.findIndex((item) => item.id === toId); // Find the index of the target movie in the movie grid
     if (toIndex !== -1) {
       // If the target movie is found in the movie grid
       updatedMovies[toIndex].rank = fromIndex; // Update the rank of the target movie
@@ -82,8 +80,8 @@ const handleDragEnd = (event) => {
   } else if (!fromId.startsWith("rank-slot") && toId.startsWith("rank-slot")) {
     // If the dragged item is a movie in the grid and the target item is a rank slot
     console.log("Moving movie to rank slot");
-    fromIndex = updatedMovies.findIndex((item) => item.id === fromId); // Find the index of the dragged movie in the movie grid
-    toIndex = parseInt(toId.split("-")[2]); // Get the index of the target rank slot
+    let fromIndex = updatedMovies.findIndex((item) => item.id === fromId); // Find the index of the dragged movie in the movie grid
+    let toIndex = parseInt(toId.split("-")[2]); // Get the index of the target rank slot
     if (fromIndex !== -1) {
       // If the dragged movie is found in the movie grid
       updatedMovies[fromIndex].rank = toIndex; // Update the rank of the dragged movie
@@ -92,10 +90,10 @@ const handleDragEnd = (event) => {
     } else {
       console.error("Dragged movie not found in grid.");
     }
-  } else { 
+  } else {
     console.error("Invalid drag and drop operation.");
   }
-  
+
   const fromIndex = fromId.startsWith("rank-slot")
     ? parseInt(fromId.split("-")[2])
     : updatedMovies.findIndex((item) => item.id === fromId); // Find the index of the dragged movie in the movie grid/ranked movies

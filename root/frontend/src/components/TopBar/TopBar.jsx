@@ -10,7 +10,6 @@ const TopBar = ({ score, onSubmit, onFilter }) => {
         <h1>Movie Ranker</h1>
       </div>
       <div className="top-bar-buttons">
-        <button onClick={onFilter}>FILTER</button>
         <button onClick={onSubmit}>SUBMIT</button>
       </div>
     </div>

@@ -19,32 +19,51 @@ import UserBar from "./components/UserBar/UserBar";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 export default function App() {
+  const [watchedMovies, setWatchedMovies] = useState([]);
+
+  useEffect(() => {
+    const fetchWatchedMovies = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/watched_movies?user_id=${user.id}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch watched movies");
+        const movies = await response.json();
+        setWatchedMovies(movies);
+      } catch (error) {
+        console.error("Error fetching watched movies:", error);
+      }
+    };
+
+    fetchWatchedMovies();
+  }, []); // Depend on user.id to re-fetch when the user changes
+
   const [movies, setMovies] = useState([]);
 
   useEffect(() => {
-    if (window.api && window.api.fetchMovies) {
-      window.api
-        .fetchMovies()
-        .then((data) => {
-          // Process the movie data if it's in the form of an array of arrays
-          const processedMovies = data.map((movie) => ({
-            id: `${movie["movie_id"]}`, // Assuming the first element is the ID
-            title: movie["title"],
-            releaseDate: movie["release_date"],
-            rating: movie["rating"],
-            certification: movie["certification"],
-            genres: movie.genres ? movie.genres.split(",") : [],
-            imageUrl: movie["poster_path"], // Adjust the indices according to your data structure
-            rank: -1, // Initialize the rank to -1
-          }));
-          console.log("Processed Movies:", processedMovies);
-          setMovies(processedMovies);
-          // console.log("Movies id:", `${movies[0]["id"]}`);
-        })
-        .catch(console.error);
-    } else {
-      console.log("API not available, running in non-Electron environment");
-    }
+    const fetchMovies = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/movies");
+        if (!response.ok) throw new Error("Failed to fetch movies");
+        const fetchedMovies = await response.json();
+        setMovies(
+          fetchedMovies.map((movie) => ({
+            id: `${movie.movie_id}`,
+            title: movie.title,
+            releaseDate: movie.release_date,
+            rating: movie.rating,
+            certification: movie.certification,
+            genres: movie.genres.split(","),
+            imageUrl: movie.poster_path,
+            rank: -1,
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching movies:", error);
+      }
+    };
+
+    fetchMovies();
   }, []);
 
   const [rankedMovies, setRankedMovies] = useState([
@@ -71,93 +90,6 @@ export default function App() {
     accountAge: 3,
     avatar: userIcon,
   });
-
-  const [watchedMovies, setWatchedMovies] = useState([
-    {
-      id: "27",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: 0,
-      isSmall: true,
-    },
-    {
-      id: "33333327",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: 0,
-      isSmall: true,
-    },
-    {
-      id: "3333327",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: 0,
-      isSmall: true,
-    },
-    {
-      id: "333327",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: 0,
-      isSmall: true,
-    },
-    {
-      id: "33327",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: 0,
-      isSmall: true,
-    },
-    {
-      id: "3327",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: 0,
-      isSmall: true,
-    },
-    {
-      id: "327",
-      title: "Forest Gump",
-      imageUrl:
-        "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-      releaseDate: "11/09/2002",
-      genres: ["Drama", "Romance"],
-      rating: 8.8,
-      certification: "PG-13",
-      rank: 0,
-      isSmall: true,
-    },
-  ]);
 
   const [score, setScore] = useState(0); // Example score state
 
@@ -189,8 +121,8 @@ export default function App() {
       return;
     }
 
-    const fromId = active.id;
-    const toId = over.id;
+    const fromId = active.id.toString();
+    const toId = over.id.toString();
     console.log(`Drag End Event from ${fromId} to ${toId}`);
 
     try {

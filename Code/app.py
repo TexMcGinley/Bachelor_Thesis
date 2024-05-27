@@ -13,14 +13,21 @@ def create_app():
 
     def initialize_game():
         connection = sqlite3.connect('movies.db')
-        all_movies = fetch_movies(connection)  # Assumes fetch_movies returns list of Movie objects
         certification_preferences = {'G': 2, 'PG': 3, 'PG-13': 4, 'R': 5, 'NC-17': 1}
         genre_preferences = create_genre_preferences(8, 5, 6, 7, 4, 9, 3, 2, 1, 5, 6, 7, 8, 5, 10, 1, 2, 3, 4)
-        user_profile = UserProfile(name="John Doe", age=25, location="London", device_type="Desktop", account_age=3, genre_preferences=genre_preferences, certification_preferences=certification_preferences, watched_movies=[])
+        user_profile = UserProfile(name="John Doe", age=25, location="London", device_type="Desktop", account_age=3, genre_preferences=genre_preferences, certification_preferences=certification_preferences, watched_movies=[13, 28, 73, 101, 105, 120, 121, 122, 128, 129, 155])
+        all_movies = fetch_movies(connection)  # Assumes fetch_movies returns list of Movie objects
         return create_game_session(user_profile, None, all_movies, 0, connection)
 
     game_session = initialize_game()
-
+    
+    @app.route('/watched_movies')
+    def get_watched_movies():
+        #user_id = request.args.get('user_id')
+        watched_movies = game_session.fetch_watched_movies()
+        watched_movies = [movie.to_dict() for movie in watched_movies]
+        return jsonify(watched_movies)
+    
     @app.route('/movies')
     def get_movies():
         connection = sqlite3.connect('movies.db')
@@ -44,6 +51,9 @@ def create_app():
             return jsonify({"score": game_session.score})
         else:
             return jsonify({"error": "Game session not initialized"}), 500
+        
+    
+
         
     @app.route('/update_rankings', methods=['POST'])
     def update_rankings():
