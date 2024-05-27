@@ -17,6 +17,7 @@ import TopBar from "./components/TopBar/TopBar";
 import userIcon from "./assets/images/userIcon.svg";
 import UserBar from "./components/UserBar/UserBar";
 import ErrorBoundary from "./components/ErrorBoundary";
+import SubmitWindow from "./components/SubmitWindow/SubmitWindow";
 
 export default function App() {
   const [watchedMovies, setWatchedMovies] = useState([]);
@@ -102,16 +103,27 @@ export default function App() {
       .catch((error) => console.error("Error fetching score:", error));
   }, []);
 
+  const [showSubmitWindow, setShowSubmitWindow] = useState(false);
+
   const handleSubmit = () => {
-    // Implement score submission logic here
+    // Toggle the visibility of the submit window
+    setShowSubmitWindow(true);
     console.log("Score submitted:", score);
   };
 
-  const handleFilter = () => {
-    // Implement filter logic here
-    console.log("Filter modal opened");
+  const handleQuit = () => {
+    window.close(); // This might not work in all browsers due to security restrictions
   };
 
+  const handleNextUser = () => {
+    console.log("Setup for next user");
+    // Implement functionality to handle the next user setup
+  };
+
+  const handleFilter = () => {
+    console.log("Filter modal opened");
+    // Implement functionality for filtering movies or other actions
+  };
   const handleDragEnd = async (event) => {
     const { active, over } = event;
     if (!over || active.id === over.id) {
@@ -189,6 +201,14 @@ export default function App() {
           </div>
         </DndContext>
       </div>
+      {showSubmitWindow && (
+        <SubmitWindow
+          score={score}
+          highScore={score}
+          onQuit={handleQuit}
+          onNextUser={handleNextUser}
+        />
+      )}
     </div>
   );
 }
