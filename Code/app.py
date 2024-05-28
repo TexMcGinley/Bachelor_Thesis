@@ -61,7 +61,7 @@ def create_app():
                 "location": user.location,
                 "deviceType": user.device_type,
                 "accountAge": user.account_age,
-                "avatar": "/path/to/default/avatar.png"  # Placeholder path for the avatar
+                "avatar": user.profile_pic  # Placeholder path for the avatar
             })
         else:
             return jsonify({"error": "Game session not initialized"}), 500

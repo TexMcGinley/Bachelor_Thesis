@@ -14,6 +14,7 @@ export const Movie = memo(
     certification,
     rank, // Accept rank as a prop
     isSmall = false, // Accept isSmall as a prop with default value
+    draggable = true, // Add draggable prop with default value
   }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({ id });
@@ -36,25 +37,38 @@ export const Movie = memo(
     const dragState = useRef({ isDragging: false, mouseDownTime: null });
 
     const handleMouseDown = () => {
-      dragState.current.mouseDownTime = Date.now(); // Record time when mouse is pressed down
+      if (draggable) {
+        dragState.current.mouseDownTime = Date.now(); // Record time when mouse is pressed down
+      }
     };
 
     const handleMouseUp = () => {
-      const timeDiff = Date.now() - dragState.current.mouseDownTime;
-      if (timeDiff < 200 && !dragState.current.isDragging) {
-        // Check if time difference is less than 200 ms and not dragging
-        setIsFlipped(!isFlipped);
+      if (draggable) {
+        const timeDiff = Date.now() - dragState.current.mouseDownTime;
+        if (timeDiff < 200 && !dragState.current.isDragging) {
+          // Check if time difference is less than 200 ms and not dragging
+          setIsFlipped(!isFlipped);
+        }
+        dragState.current.isDragging = false; // Reset dragging state on mouse up
       }
-      dragState.current.isDragging = false; // Reset dragging state on mouse up
     };
 
-    const enhancedListeners = {
-      ...listeners,
-      onMouseDown: handleMouseDown,
-      onMouseUp: handleMouseUp,
-      onDragStart: () => (dragState.current.isDragging = true), // Set dragging to true when dragging starts
-      onDragEnd: () => (dragState.current.isDragging = false), // Reset dragging state when drag ends
+    const handleClick = (e) => {
+      if (!draggable) {
+        setIsFlipped(!isFlipped);
+      }
+      e.stopPropagation();
     };
+
+    const enhancedListeners = draggable
+      ? {
+          ...listeners,
+          onMouseDown: handleMouseDown,
+          onMouseUp: handleMouseUp,
+          onDragStart: () => (dragState.current.isDragging = true), // Set dragging to true when dragging starts
+          onDragEnd: () => (dragState.current.isDragging = false), // Reset dragging state when drag ends
+        }
+      : {};
 
     // Safely handle genres display
     const genreText = Array.isArray(genres) ? genres.join(", ") : "No Genres";
@@ -66,7 +80,7 @@ export const Movie = memo(
         {...enhancedListeners}
         style={style}
         className={`movie ${isFlipped ? "flipped" : ""}`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={handleClick}
       >
         <div className="front">
           <img

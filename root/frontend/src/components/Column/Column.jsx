@@ -26,6 +26,7 @@ export const Column = ({ movies }) => {
             genres={movie.genres || []} // ensure genres is always an array
             rating={movie.rating || "NR"} // 'NR' for Not Rated
             certification={movie.certification || "Not certified"}
+            draggable={true} // Make movie draggable
           />
         ))}
       </SortableContext>

@@ -13,11 +13,15 @@ const UserBar = ({ user, watchedMovies }) => {
           <h2>{user.name}</h2>
         </div>
         <div className="user-info">
-          <h3>User Information</h3>
-          <p>Age: {user.age}</p>
-          <p>Location: {user.location}</p>
-          <p>Device type: {user.deviceType}</p>
-          <p>Account age: {user.accountAge} years</p>
+          <h3>User Stats</h3>
+          <p className="label">Age :</p>
+          <p className="value">{user.age} years</p>
+          <p className="label">Location :</p>
+          <p className="value">{user.location}</p>
+          <p className="label">Device type :</p>
+          <p className="value">{user.deviceType}</p>
+          <p className="label">Account age :</p>
+          <p className="value">{user.accountAge} years</p>
         </div>
       </div>
       <div className="previously-watched-label">
@@ -35,6 +39,7 @@ const UserBar = ({ user, watchedMovies }) => {
             rating={movie.rating}
             certification={movie.certification}
             isSmall={movie.isSmall}
+            draggable={false} // Not draggable
           />
         ))}
       </div>

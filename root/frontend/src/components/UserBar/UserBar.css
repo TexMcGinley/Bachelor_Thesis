@@ -1,52 +1,72 @@
 .user-bar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;  /* Center align the user bar contents */
-    width: 100%;
-    margin-top: 40px; /* Space between user bar and content */
-  }
-  
-  .user-profile {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center align the user details and avatar */
-    margin-bottom: 20px;
-  }
-  
-  .user-avatar img {
-    width: 100px; /* Smaller profile picture */
-    height: 100px;
-    border-radius: 50%; /* Circular avatar */
-    margin-bottom: 10px; /* Space between avatar and user info */
-  }
-  
-  .user-info {
-    text-align: left; /* Center the user info text */
-    color: white; /* White text */
-    padding-bottom: 75px;
-  }
-  
-  .previously-watched {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 columns for movies */
-    gap: 10px; /* Space between movies */
-    row-gap: 10px;
-    width: 100%;
-    padding: 0px 20px; /* Padding on the sides */
-    color: black;
-  }
-  
-  .previously-watched .movie {
-    width: 90px; /* Adjust the width of the movie */
-    height: 135px; /* Adjust the height based on aspect ratio */
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 40px;
+}
 
-  .previously-watched-label{
-    color: white;
-  }
+.user-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
 
-  .user-name{
-    color: white;
-    padding-bottom: 50px;
-  }
+.user-avatar img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.user-info {
+  color: white;
+  display: grid;
+  grid-template-columns: auto auto; /* Two columns: one for labels, one for values */
+  gap: 5px 80px; /* Adjust gap between labels and values */
+  text-align: left;
+  padding-bottom: 75px;
   
+}
+
+.user-info h3 {
+  grid-column: span 2; /* Make the header span both columns */
+  text-align: center; /* Center align the header */
+}
+
+.user-info p {
+  margin: 0; /* Remove margin from paragraphs */
+}
+
+.user-info .label {
+  text-align: left; /* Left align the labels */
+}
+
+.user-info .value {
+  text-align: right; /* Right align the values */
+}
+
+.previously-watched {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  row-gap: 10px;
+  width: 100%;
+  padding: 0px 20px;
+  color: black;
+}
+
+.previously-watched .movie {
+  width: 90px;
+  height: 135px;
+}
+
+.previously-watched-label {
+  color: white;
+}
+
+.user-name {
+  color: white;
+  padding-bottom: 50px;
+}

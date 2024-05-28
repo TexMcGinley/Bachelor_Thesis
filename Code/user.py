@@ -11,7 +11,7 @@ class UserProfile:
           self.certification_preferences = certification_preferences
           #self.length_preferences = length_preferences (figure out how to scrape this or scrap it)
           self.watched_movies = watched_movies
-
+          self.profile_pic = '/Users/texxm/Desktop/Bachelor_Thesis/root/frontend/src/assets/images/userIcon.svg' # Placeholder path for the avatar
      
      def add_to_watched_movies(self, movie):
           self.watched_movies.append(movie)

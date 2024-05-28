@@ -331,8 +331,8 @@ class GameSession:
                     for movie1 in self.available_movies:
                         if movie1.movie_id == movie_id:
                             movie1.watched = True
-                    # if movie in self.available_movies:
-                    #     self.available_movies.remove(movie)
+                    if movie in self.available_movies:
+                        self.available_movies.remove(movie)
                 else:
                     print("Maximum limit of 9 watched movies reached.")
                     break
