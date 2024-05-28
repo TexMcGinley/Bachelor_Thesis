@@ -8,8 +8,33 @@ class Movie:
         self.rating = rating
         self.release_date = release_date
         #self.length = length
-        self.age_rating = age_rating
+        self.certification = age_rating
         self.poster_path = poster_path
+        self.rank = -1 # Default value for rank
+        self.isSmall = False
+        self.watched = False
+
+    def __eq__(self, other):
+        if not isinstance(other, Movie):
+            return NotImplemented
+        return self.movie_id == other.movie_id
+
+    def __hash__(self):
+        return hash(self.movie_id)
+    
+    def to_dict(self):
+        return {
+            "id": self.movie_id,
+            "title": self.title,
+            "releaseDate": self.release_date,
+            "rating": self.rating,
+            "certification": self.certification,
+            "genres": self.genres,
+            "imageUrl": self.poster_path,
+            "rank": self.rank,
+            "isSmall": self.isSmall,
+            "watched": self.watched
+        }
 
 
 def connect_to_db(db_name):
@@ -20,8 +45,12 @@ def fetch_movies(connection):
     cursor = connection.cursor()
     cursor.execute('SELECT movie_id, title, rating, release_date, certification, poster_path FROM Movies')
     movies_data = cursor.fetchall()
-    return movies_data
-
+    movies = []
+    for movie_data in movies_data:
+        movie_id, title, rating, release_date, certification, poster_path = movie_data
+        genres = get_genres_for_movie(movie_id, connection)  # Assuming a function to fetch genres
+        movies.append(Movie(movie_id, title, genres, rating, release_date, certification, poster_path))
+    return movies
 
 # def create_movie_objects(movies_data):
 #     movie_objects = []
