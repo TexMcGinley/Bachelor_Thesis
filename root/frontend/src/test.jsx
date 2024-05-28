@@ -160,3 +160,15 @@ const handleDragEnd = (event) => {
   setMovies(updatedMovies.filter((movie) => movie));
   setRankedMovies(final_ranked_movies.filter((movie) => movie));
 };
+
+// {
+//   id: "27",
+//   title: "Forest Gump",
+//   imageUrl:
+//     "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
+//   releaseDate: "11/09/2002",
+//   genres: ["Drama", "Romance"],
+//   rating: 8.8,
+//   certification: "PG-13",
+//   rank: 0,
+// },

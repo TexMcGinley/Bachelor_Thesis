@@ -23,7 +23,6 @@ def create_app():
     
     @app.route('/watched_movies')
     def get_watched_movies():
-        #user_id = request.args.get('user_id')
         watched_movies = game_session.fetch_watched_movies()
         watched_movies = [movie.to_dict() for movie in watched_movies]
         return jsonify(watched_movies)
@@ -52,8 +51,20 @@ def create_app():
         else:
             return jsonify({"error": "Game session not initialized"}), 500
         
-    
-
+    @app.route('/user')
+    def get_user():
+        if game_session is not None:
+            user = game_session.user_profile
+            return jsonify({
+                "name": user.name,
+                "age": user.age,
+                "location": user.location,
+                "deviceType": user.device_type,
+                "accountAge": user.account_age,
+                "avatar": "/path/to/default/avatar.png"  # Placeholder path for the avatar
+            })
+        else:
+            return jsonify({"error": "Game session not initialized"}), 500
         
     @app.route('/update_rankings', methods=['POST'])
     def update_rankings():
@@ -61,8 +72,7 @@ def create_app():
         if game_session:
             from_index = data['fromId']
             to_index = data['toId']
-            print("from_index : ", from_index, "to_index : ", to_index)
-            game_session.move_movie(from_index, to_index)  # This function must handle logic to update both lists correctly
+            game_session.move_movie(from_index, to_index)
             
             updated_available_movies = [
                 movie.to_dict() for movie in game_session.available_movies if movie is not None
@@ -79,7 +89,6 @@ def create_app():
             return jsonify({"error": "Game session not initialized"}), 500
 
     return app
-        
 
 
 if __name__ == '__main__':

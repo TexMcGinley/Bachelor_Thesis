@@ -8,6 +8,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 1000;
   }
   
   .submit-content {
@@ -34,7 +35,9 @@
     padding: 10px 20px;
     margin: 10px;
     font-size: 16px;
+    background-color: #FFBA08;
     cursor: pointer;
+    border-radius: 5px;
   }
   
   button:hover {

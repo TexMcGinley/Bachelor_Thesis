@@ -5,8 +5,8 @@
     padding: 10px 20px;
     background-color: #E50914;
     height: 100px;
-
     color: white;
+    position: relative;
 }
 
 .score-display {
@@ -27,4 +27,16 @@
 
 .top-bar-buttons button:hover {
     background-color: #ec971f; /* Darker shade for hover effect */
+}
+
+.top-bar-title {
+    font-size: 24px;
+    font-weight: bold;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+h1 {
+    margin: 0; /* Remove default margin from h1 */
 }

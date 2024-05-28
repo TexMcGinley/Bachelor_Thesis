@@ -18,28 +18,63 @@ import userIcon from "./assets/images/userIcon.svg";
 import UserBar from "./components/UserBar/UserBar";
 import ErrorBoundary from "./components/ErrorBoundary";
 import SubmitWindow from "./components/SubmitWindow/SubmitWindow";
+import StartScreen from "./components/StartScreen/StartScreen";
 
 export default function App() {
   const [watchedMovies, setWatchedMovies] = useState([]);
+  const [user, setUser] = useState(null);
+  const [movies, setMovies] = useState([]);
+  const [rankedMovies, setRankedMovies] = useState([]);
+  const [score, setScore] = useState(0);
+  const [showSubmitWindow, setShowSubmitWindow] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
+
+  // const [user, setUser] = useState({
+  //   name: "John Doe",
+  //   age: 25,
+  //   location: "New York",
+  //   deviceTyoe: "Desktop",
+  //   accountAge: 3,
+  //   avatar: userIcon,
+  // });
 
   useEffect(() => {
-    const fetchWatchedMovies = async () => {
+    const fetchUser = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:5000/watched_movies?user_id=${user.id}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch watched movies");
-        const movies = await response.json();
-        setWatchedMovies(movies);
+        const response = await fetch("http://localhost:5000/user");
+        if (!response.ok) throw new Error("Failed to fetch user data");
+        const userData = await response.json();
+        setUser(userData);
       } catch (error) {
-        console.error("Error fetching watched movies:", error);
+        console.error("Error fetching user data:", error);
       }
     };
 
-    fetchWatchedMovies();
-  }, []); // Depend on user.id to re-fetch when the user changes
+    fetchUser();
+  }, []);
 
-  const [movies, setMovies] = useState([]);
+  const startGame = () => {
+    setGameStarted(true);
+  };
+
+  useEffect(() => {
+    if (user) {
+      const fetchWatchedMovies = async () => {
+        try {
+          const response = await fetch(
+            `http://localhost:5000/watched_movies?user_id=${user.id}`
+          );
+          if (!response.ok) throw new Error("Failed to fetch watched movies");
+          const movies = await response.json();
+          setWatchedMovies(movies);
+        } catch (error) {
+          console.error("Error fetching watched movies:", error);
+        }
+      };
+
+      fetchWatchedMovies();
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -67,33 +102,6 @@ export default function App() {
     fetchMovies();
   }, []);
 
-  const [rankedMovies, setRankedMovies] = useState([
-    // {
-    //   id: "27",
-    //   title: "Forest Gump",
-    //   imageUrl:
-    //     "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
-    //   releaseDate: "11/09/2002",
-    //   genres: ["Drama", "Romance"],
-    //   rating: 8.8,
-    //   certification: "PG-13",
-    //   rank: 0,
-    // },
-  ]);
-
-  const getMoviePos = (id) => movies.findIndex((movie) => movie.id === id);
-
-  const [user, setUser] = useState({
-    name: "John Doe",
-    age: 25,
-    location: "New York",
-    deviceTyoe: "Desktop",
-    accountAge: 3,
-    avatar: userIcon,
-  });
-
-  const [score, setScore] = useState(0); // Example score state
-
   useEffect(() => {
     fetch("http://localhost:5000/score") // Update the URL/port based on your Flask config
       .then((response) => response.json())
@@ -102,8 +110,6 @@ export default function App() {
       })
       .catch((error) => console.error("Error fetching score:", error));
   }, []);
-
-  const [showSubmitWindow, setShowSubmitWindow] = useState(false);
 
   const handleSubmit = () => {
     // Toggle the visibility of the submit window
@@ -170,45 +176,52 @@ export default function App() {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-
-  return (
-    <div className="App">
-      <div className="header">
-        <TopBar score={score} onSubmit={handleSubmit} onFilter={handleFilter} />
+  if (!gameStarted) {
+    return <StartScreen onStart={startGame} />;
+  } else {
+    return (
+      <div className="App">
+        <div className="header">
+          <TopBar
+            score={score}
+            onSubmit={handleSubmit}
+            onFilter={handleFilter}
+          />
+        </div>
+        <div className="content">
+          <DndContext
+            sensors={sensors}
+            onDragEnd={handleDragEnd}
+            collisionDetection={closestCenter}
+          >
+            <div className="recommendationRanking">
+              <ErrorBoundary>
+                <RecommendationRanking movies={rankedMovies} />
+              </ErrorBoundary>
+            </div>
+            <div className="movieGrid">
+              <ErrorBoundary>
+                {movies && movies.length > 0 ? (
+                  <Column movies={movies} />
+                ) : (
+                  <p>No movies to display.</p>
+                )}
+              </ErrorBoundary>
+            </div>
+            <div className="userBar">
+              <UserBar user={user} watchedMovies={watchedMovies} />
+            </div>
+          </DndContext>
+        </div>
+        {showSubmitWindow && (
+          <SubmitWindow
+            score={score}
+            highScore={score}
+            onQuit={handleQuit}
+            onNextUser={handleNextUser}
+          />
+        )}
       </div>
-      <div className="content">
-        <DndContext
-          sensors={sensors}
-          onDragEnd={handleDragEnd}
-          collisionDetection={closestCenter}
-        >
-          <div className="recommendationRanking">
-            <ErrorBoundary>
-              <RecommendationRanking movies={rankedMovies} />
-            </ErrorBoundary>
-          </div>
-          <div className="movieGrid">
-            <ErrorBoundary>
-              {movies && movies.length > 0 ? (
-                <Column movies={movies} />
-              ) : (
-                <p>No movies to display.</p>
-              )}
-            </ErrorBoundary>
-          </div>
-          <div className="userBar">
-            <UserBar user={user} watchedMovies={watchedMovies} />
-          </div>
-        </DndContext>
-      </div>
-      {showSubmitWindow && (
-        <SubmitWindow
-          score={score}
-          highScore={score}
-          onQuit={handleQuit}
-          onNextUser={handleNextUser}
-        />
-      )}
-    </div>
-  );
+    );
+  }
 }
