@@ -1,7 +1,7 @@
 from movie import fetch_movie_by_id
 
 class UserProfile:
-     def __init__(self, name, age, location, device_type, account_age, genre_preferences, certification_preferences, watched_movies): #, length_preferences
+     def __init__(self, name, age, location, device_type, account_age, genre_preferences, certification_preferences, watched_movies, profile_pic): #, length_preferences
           self.name = name
           self.age = age
           self.location = location
@@ -11,7 +11,7 @@ class UserProfile:
           self.certification_preferences = certification_preferences
           #self.length_preferences = length_preferences (figure out how to scrape this or scrap it)
           self.watched_movies = watched_movies
-          self.profile_pic = '/Users/texxm/Desktop/Bachelor_Thesis/root/frontend/src/assets/images/userIcon.svg' # Placeholder path for the avatar
+          self.profile_pic = profile_pic # Placeholder path for the avatar
      
      def add_to_watched_movies(self, movie):
           self.watched_movies.append(movie)
@@ -23,8 +23,8 @@ class UserProfile:
                     self.add_to_watched_movies(movie)
 
 
-def create_user_profile(name, age, location, device_type, account_age, genre_preferences, certification_preferences, watched_movies): #, length_preferences
-   user_profile = UserProfile(name, age, location, device_type, account_age, genre_preferences, certification_preferences, watched_movies)
+def create_user_profile(name, age, location, device_type, account_age, genre_preferences, certification_preferences, watched_movies, profile_pic): #, length_preferences
+   user_profile = UserProfile(name, age, location, device_type, account_age, genre_preferences, certification_preferences, watched_movies, profile_pic)
    return user_profile
    
 def create_genre_preferences(adventure, fantasy, animation, drama, horror, action, comedy, history, thriller, crime, documentary, science_fiction, mystery, music, romance, family, war, western, tv_movie):

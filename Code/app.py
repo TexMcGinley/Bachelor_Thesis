@@ -15,7 +15,7 @@ def create_app():
         connection = sqlite3.connect('movies.db')
         certification_preferences = {'G': 2, 'PG': 3, 'PG-13': 4, 'R': 5, 'NC-17': 1}
         genre_preferences = create_genre_preferences(8, 5, 6, 7, 4, 9, 3, 2, 1, 5, 6, 7, 8, 5, 10, 1, 2, 3, 4)
-        user_profile = UserProfile(name="John Doe", age=25, location="London", device_type="Desktop", account_age=3, genre_preferences=genre_preferences, certification_preferences=certification_preferences, watched_movies=[13, 28, 73, 101, 105, 120, 121, 122, 128, 129, 155])
+        user_profile = UserProfile(name="John Doe", age=25, location="London", device_type="Desktop", account_age=3, genre_preferences=genre_preferences, certification_preferences=certification_preferences, watched_movies=[13, 28, 73, 101, 105, 120, 121, 122, 128, 129, 155], profile_pic="userIcon.svg")
         all_movies = fetch_movies(connection)  # Assumes fetch_movies returns list of Movie objects
         return create_game_session(user_profile, None, all_movies, 0, connection)
 
@@ -61,7 +61,7 @@ def create_app():
                 "location": user.location,
                 "deviceType": user.device_type,
                 "accountAge": user.account_age,
-                "avatar": user.profile_pic  # Placeholder path for the avatar
+                "avatar": f"/src/assets/images/{user.profile_pic}"  # Placeholder path for the avatar
             })
         else:
             return jsonify({"error": "Game session not initialized"}), 500
