@@ -14,6 +14,11 @@
     font-weight: bold;
 }
 
+.top-bar-buttons {
+    display: flex;
+    align-items: center;
+}
+
 .top-bar-buttons button {
     margin-left: 10px;
     padding: 10px 20px;
@@ -27,6 +32,12 @@
 
 .top-bar-buttons button:hover {
     background-color: #ec971f; /* Darker shade for hover effect */
+}
+
+.round-display {
+    margin-left: 20px;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .top-bar-title {

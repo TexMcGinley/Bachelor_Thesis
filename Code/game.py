@@ -1,12 +1,13 @@
 from score import calculate_score, calculate_total_score
 from movie import fetch_movie_by_id, get_movie_by_title, Movie, connect_to_db, fetch_movies
+from epsilon_greedy import EpsilonGreedy
 
 class GameSession:
     MAX_RECOMMENDATIONS = 10
     MAX_MOVES = 20
     NUMBER_OF_ROUNDS = 4
 
-    def __init__(self, user_profile, epsilon_greedy, all_movies, learning_phase_iterations, connection):
+    def __init__(self, user_profile, epsilon_greedy, all_movies, learning_phase_iterations, connection, epsilon_game_session=None):
         self.user_profile = user_profile
         self.epsilon_greedy = epsilon_greedy
         self.recommendation_list = []
@@ -17,6 +18,10 @@ class GameSession:
         self.iteration_count = 0
         self.learning_phase = True
         self.connection = connection
+        self.round = 1
+        self.moves_left = GameSession.MAX_MOVES
+        self.eplison_values = [0.99, 0.85, 0.6, 0.3, 0.000001]
+        self.epsilon_game_session = epsilon_game_session
 
     def add_to_recommendation_list_algorithm(self, movie, temp_score=None, position=None): # Add a movie to the recommendation list based on the epsilon greedy algorithm
         self.available_movies = [m for m in self.available_movies if m is not None and hasattr(m, 'movie_id')]
@@ -50,6 +55,21 @@ class GameSession:
         # Ensure only non-None movies are considered in sorting
         self.recommendation_list = [m for m in self.recommendation_list if m is not None]
         self.recommendation_list.sort(key=lambda x: self.epsilon_greedy.get_movie_score(x), reverse=True)
+
+    
+    def calculate_epsilon_greedy_score(self):
+        self.epsilon_greedy.update_epsilon(self.eplison_values[self.round - 1])
+        print("Epsilon value: ", self.eplison_values[self.round - 1])
+        for _ in range(self.MAX_MOVES):
+            self.add_movie_by_algorithm()
+        return self.score
+
+    def submit_round(self):
+        epsilon_score = self.epsilon_game_session.calculate_epsilon_greedy_score()
+        epsilon_value = self.epsilon_game_session.epsilon_greedy.epsilon
+        print("Epsilon Greedy score: ", epsilon_score, "at epsilon value: ", epsilon_value)
+        self.epsilon_game_session.clear_recommendation_list() 
+        return self.score, epsilon_score, epsilon_value
 
 
     def remove_from_recommendation_list(self, movie_id):
@@ -362,11 +382,15 @@ class GameSession:
         
     
 def create_game_session(user_profile, epsilon_greedy, all_movies, learning_phase_iterations, connection):
-    game_session = GameSession(user_profile, epsilon_greedy, all_movies, learning_phase_iterations, connection=connection)
+    epsilon_greedy = EpsilonGreedy(0.99, connection)
+    epsilon_GameSession = GameSession(user_profile, epsilon_greedy, all_movies, learning_phase_iterations, connection=connection)
+    game_session = GameSession(user_profile, None, all_movies, learning_phase_iterations, connection=connection, epsilon_game_session=epsilon_GameSession)
     for _ in range(GameSession.MAX_RECOMMENDATIONS):
         game_session.recommendation_list.append(None)
+        game_session.epsilon_game_session.recommendation_list.append(None)
     watched_movies = [fetch_movie_by_id(movie_id, connection) for movie_id in game_session.user_profile.watched_movies]  # Fetch movies.
     game_session.set_watched_movies(watched_movies)
+    game_session.epsilon_game_session.set_watched_movies(watched_movies)
     return game_session
 
 

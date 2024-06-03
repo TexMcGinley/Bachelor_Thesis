@@ -24,8 +24,15 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [rankedMovies, setRankedMovies] = useState([]);
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(() => {
+    return Number(localStorage.getItem("highScore")) || 0;
+  }); // Initialize highScore state from local storage or set to 0
   const [showSubmitWindow, setShowSubmitWindow] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [epsilonScore, setEpsilonScore] = useState(0); // Add epsilonScore state
+  const [epsilonValue, setEpsilonValue] = useState(1.0); // Add epsilonValue state
+  const [movesLeft, setMovesLeft] = useState(20); // Add movesLeft state
+  const [round, setRound] = useState(1); // Add round state
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -107,9 +114,31 @@ export default function App() {
       .catch((error) => console.error("Error fetching score:", error));
   }, []);
 
-  const handleSubmit = () => {
-    setShowSubmitWindow(true);
-    console.log("Score submitted:", score);
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error("Failed to submit");
+
+      const { userScore, epsilonScore, epsilonValue, round, movesLeft } =
+        await response.json();
+      setScore(userScore);
+      setEpsilonScore(epsilonScore);
+      setEpsilonValue(epsilonValue);
+      setMovesLeft(movesLeft);
+      setShowSubmitWindow(true);
+      console.log("Score submitted:", userScore);
+
+      if (userScore > highScore) {
+        setHighScore(userScore);
+        localStorage.setItem("highScore", userScore);
+      }
+    } catch (error) {
+      console.error("Error submitting score:", error);
+    }
   };
 
   const handleQuit = () => {
@@ -120,8 +149,24 @@ export default function App() {
     console.log("Setup for next user");
   };
 
-  const handleFilter = () => {
-    console.log("Filter modal opened");
+  const handleNextRound = () => {
+    setShowSubmitWindow(false);
+    setMovesLeft(20); // Reset moves left for the next round
+    setRound((prevRound) => prevRound + 1);
+    console.log("Start next round");
+    // Logic to start the next round goes here
+  };
+
+  // Logic to decrement movesLeft when a move is made
+  const handleMovieAdd = async (movieId, slotId) => {
+    if (movesLeft > 0) {
+      setMovesLeft((prevMovesLeft) => prevMovesLeft - 1);
+
+      // Trigger handleSubmit when moves are exhausted
+      if (movesLeft - 1 === 0) {
+        await handleSubmit();
+      }
+    }
   };
 
   const handleDragEnd = async (event) => {
@@ -150,6 +195,11 @@ export default function App() {
         rankedMovies.map((movie) => (movie !== "null" ? movie : null))
       );
       setScore(score);
+
+      // Check if the movie was added from availableMovies to rankedMovies
+      if (!fromId.includes("rank-slot") && toId.includes("rank-slot")) {
+        await handleMovieAdd(fromId, toId);
+      }
     } catch (error) {
       console.error("Failed to handle drag end:", error);
     }
@@ -170,7 +220,12 @@ export default function App() {
   return (
     <div className="App">
       <div className="header">
-        <TopBar score={score} onSubmit={handleSubmit} onFilter={handleFilter} />
+        <TopBar
+          score={score}
+          movesLeft={movesLeft}
+          round={round}
+          onSubmit={handleSubmit}
+        />
       </div>
       <div className="content">
         <DndContext
@@ -186,7 +241,7 @@ export default function App() {
           <div className="movieGrid">
             <ErrorBoundary>
               {movies && movies.length > 0 ? (
-                <Column movies={movies} />
+                <Column movies={movies} onMovieAdd={handleMovieAdd} />
               ) : (
                 <p>No movies to display.</p>
               )}
@@ -199,10 +254,14 @@ export default function App() {
       </div>
       {showSubmitWindow && (
         <SubmitWindow
+          round={round}
           score={score}
-          highScore={score}
+          highScore={highScore}
+          epsilonScore={epsilonScore}
+          epsilonValue={epsilonValue}
           onQuit={handleQuit}
           onNextUser={handleNextUser}
+          onNextRound={handleNextRound}
         />
       )}
     </div>

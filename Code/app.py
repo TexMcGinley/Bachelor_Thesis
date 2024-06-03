@@ -3,6 +3,7 @@ from game import GameSession, create_game_session
 from user import UserProfile, create_genre_preferences
 from movie import fetch_movies
 from flask_cors import CORS
+from epsilon_greedy import EpsilonGreedy
 import sqlite3
 
 
@@ -65,7 +66,24 @@ def create_app():
             })
         else:
             return jsonify({"error": "Game session not initialized"}), 500
-        
+    
+    @app.route('/submit', methods=['POST'])
+    def submit():
+        if game_session:
+            user_score, epsilon_score, epsilon_value = game_session.submit_round()
+            game_session.round += 1  # Increment round after submission
+            game_session.epsilon_game_session.round += 1  # Increment round after submission
+            game_session.moves_left = GameSession.MAX_MOVES  # Reset moves left
+            return jsonify({
+                "userScore": user_score,
+                "epsilonScore": epsilon_score,
+                "epsilonValue": epsilon_value,
+                "round": game_session.round,
+                "movesLeft": game_session.moves_left
+            })
+        else:
+            return jsonify({"error": "Game session not initialized"}), 500
+            
     @app.route('/update_rankings', methods=['POST'])
     def update_rankings():
         data = request.get_json()
