@@ -2,7 +2,7 @@ from user import create_user_profile, create_genre_preferences
 from movie import fetch_movie_by_id, connect_to_db, get_genres_for_movie, id_to_title, title_to_id, fetch_movies
 from epsilon_greedy import EpsilonGreedy
 from contextual_epsilon_greedy import ContextualEpsilonGreedy
-from game import create_game_session, start_game
+from game import create_game_session, start_game1
 from score import calculate_score, calculate_total_score
 import matplotlib.pyplot as plt
 from statistics import mean
@@ -38,15 +38,18 @@ def main():
     #genre_preferences = create_genre_preferences(0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     genre_preferences = create_genre_preferences(8, 5, 6, 7, 4, 9, 3, 2, 1, 5, 6, 7, 8, 5, 10, 1, 2, 3, 4)
 
-    user1 = create_user_profile(name, age, location, device_type, account_age, genre_preferences, certification_preferences, [])
-    watched_movies_ids = [13, 28, 73, 101]  # Example movie IDs
+    
+    watched_movies = [13, 28, 73, 101]  # Example movie IDs
+    epsilon_user = create_user_profile(name, age, location, device_type, account_age, genre_preferences, certification_preferences, watched_movies, None)
+    user = create_user_profile(name, age, location, device_type, account_age, genre_preferences, certification_preferences, watched_movies, None)
     connection = connect_to_db("movies.db") # Connect to the database
-    user1.set_watched_movies(watched_movies_ids, connection) # Set the watched movies for the user profile
+    # connection2 = connect_to_db("movies.db") # Connect to the database
+    # user1.set_watched_movies(watched_movies_ids, connection) # Set the watched movies for the user profile
 
-    all_movie_ids = [row[0] for row in fetch_movies(connection)] # Get all movie IDs
-    all_movies = [fetch_movie_by_id(movie_id, connection) for movie_id in all_movie_ids] # Get all movie objects
+    all_movies = fetch_movies(connection)  # Fetch all movies from the database
+    epsilon_greedy = EpsilonGreedy(0.1, connection)
 
-    start_game(user1, all_movies, connection)
+    start_game1(epsilon_user, user, epsilon_greedy, all_movies, connection)
 
 
     # epsilon_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7] # Epsilon values to test

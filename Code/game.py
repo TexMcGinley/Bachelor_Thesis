@@ -1,8 +1,10 @@
 from score import calculate_score, calculate_total_score
-from movie import fetch_movie_by_id, get_movie_by_title, Movie
+from movie import fetch_movie_by_id, get_movie_by_title, Movie, connect_to_db, fetch_movies
 
 class GameSession:
     MAX_RECOMMENDATIONS = 10
+    MAX_MOVES = 20
+    NUMBER_OF_ROUNDS = 4
 
     def __init__(self, user_profile, epsilon_greedy, all_movies, learning_phase_iterations, connection):
         self.user_profile = user_profile
@@ -17,8 +19,10 @@ class GameSession:
         self.connection = connection
 
     def add_to_recommendation_list_algorithm(self, movie, temp_score=None, position=None): # Add a movie to the recommendation list based on the epsilon greedy algorithm
-        available_movie_ids = [m.movie_id for m in self.available_movies]
-        if movie.movie_id in available_movie_ids:
+        self.available_movies = [m for m in self.available_movies if m is not None and hasattr(m, 'movie_id')]
+        available_movies_ids = [m.movie_id for m in self.available_movies]
+
+        if movie.movie_id in available_movies_ids:
             if position is None: # If no position is provided, add the movie to the end of the recommendation list
                 self.recommendation_list.append(movie)
             else: # Add the movie to the specified position in the recommendation list
@@ -32,17 +36,20 @@ class GameSession:
 
 
     def add_movie_by_algorithm(self):
-        selected_movie = self.epsilon_greedy.explore_or_exploit(self.available_movies) # Select a movie based on the epsilon greedy algorithm
-        # Replace the last movie in the recommendation list
-        if len(self.recommendation_list) == self.MAX_RECOMMENDATIONS: # If the recommendation list is full, remove the last movie
-            last_movie = self.recommendation_list.pop() # Remove the last movie in the recommendation list
-            self.available_movies.append(last_movie) # Add the last movie back to the available movies
+        selected_movie = self.epsilon_greedy.explore_or_exploit(self.available_movies)  # Select a movie based on the epsilon greedy algorithm
+        # Replace the last movie in the recommendation list if it is full
+        if len(self.recommendation_list) == self.MAX_RECOMMENDATIONS:
+            last_movie = self.recommendation_list.pop()  # Remove the last movie in the recommendation list
+            if last_movie is not None:
+                self.available_movies.append(last_movie)  # Add the last movie back to the available movies
             self.update_score()
 
-        temp_score = self.score # record the score of the recommendation list before adding the selected movie
-        self.add_to_recommendation_list_algorithm(selected_movie, temp_score) # Add the selected movie to the recommendation list
-        self.recommendation_list.sort(key=lambda x: self.epsilon_greedy.get_movie_score(x), reverse=True) # Sort the recommendation list based on the scores
-        self.epsilon_greedy.update_epsilon()  # Update epsilon after each iteration
+        temp_score = self.score  # Record the score of the recommendation list before adding the selected movie
+        if selected_movie is not None:
+            self.add_to_recommendation_list_algorithm(selected_movie, temp_score)  # Add the selected movie to the recommendation list
+        # Ensure only non-None movies are considered in sorting
+        self.recommendation_list = [m for m in self.recommendation_list if m is not None]
+        self.recommendation_list.sort(key=lambda x: self.epsilon_greedy.get_movie_score(x), reverse=True)
 
 
     def remove_from_recommendation_list(self, movie_id):
@@ -169,11 +176,15 @@ class GameSession:
     #         print("Invalid positions provided")
 
     def clear_recommendation_list(self):
-        for movie in self.recommendation_list:
-            if movie not in self.available_movies:
-                self.remove_from_recommendation_list(movie.movie_id)
-        self.recommendation_list = []
-        self.score = 0
+        for i in range(len(self.recommendation_list)):
+            if self.recommendation_list[i] is not None:
+                # print(f"Clearing movie: {self.recommendation_list[i].title} from rank: {i + 1}")
+                self.available_movies.insert(0, self.recommendation_list[i])
+                self.available_movies[0].rank = -1
+                self.recommendation_list[i] = None
+        self.score = 0  # Reset the score as the list is now empty
+        # print("Recommendation list has been cleared.")
+
 
     def add_movie_at_rank(self, movie_title, rank):
         movie = get_movie_by_title(movie_title, self.connection)
@@ -318,24 +329,23 @@ class GameSession:
         for movie in self.available_movies[:10]:
             print(movie.title)
 
-    def set_watched_movies(self, watched_movies_ids):
+    def set_watched_movies(self, watched_movies):
         self.user_profile.watched_movies = []  # Clearing previous watched movies if any
-        print("Setting watched movies with IDs:", watched_movies_ids)
-        for movie_id in watched_movies_ids:
-            movie = fetch_movie_by_id(movie_id, self.connection)
-            if movie:
-                if len(self.user_profile.watched_movies) < 9:
-                    print(f"Adding '{movie.title}' to watched movies.")
-                    movie.isSmall = True
-                    self.user_profile.watched_movies.append(movie)
-                    for movie1 in self.available_movies:
-                        if movie1.movie_id == movie_id:
-                            movie1.watched = True
-                    if movie in self.available_movies:
-                        self.available_movies.remove(movie)
-                else:
-                    print("Maximum limit of 9 watched movies reached.")
-                    break
+        print("Setting watched movies with IDs:", watched_movies)  # Ensure you are passing IDs.
+        
+        for movie in watched_movies:
+            if len(self.user_profile.watched_movies) < 9:
+                print(f"Adding '{movie.title}' to watched movies.")
+                movie.isSmall = True
+                self.user_profile.watched_movies.append(movie)
+                for movie1 in self.available_movies:
+                    if movie1.movie_id == movie.movie_id:
+                        movie1.watched = True
+                if movie in self.available_movies:
+                    self.available_movies.remove(movie)
+            else:
+                print("Maximum limit of 9 watched movies reached.")
+                break
         print(self.user_profile.watched_movies)
         print("Watched movies set successfully.")
 
@@ -351,15 +361,24 @@ class GameSession:
             
         
     
-def create_game_session(user_profile, epsilon_greedy, all_movies, learning_phase_iterations, connenction):
-    game_session = GameSession(user_profile, epsilon_greedy, all_movies, learning_phase_iterations, connection=connenction)
+def create_game_session(user_profile, epsilon_greedy, all_movies, learning_phase_iterations, connection):
+    game_session = GameSession(user_profile, epsilon_greedy, all_movies, learning_phase_iterations, connection=connection)
     for _ in range(GameSession.MAX_RECOMMENDATIONS):
         game_session.recommendation_list.append(None)
-    print("watched_movies1: ", user_profile.watched_movies)
-    game_session.set_watched_movies(user_profile.watched_movies)
+    watched_movies = [fetch_movie_by_id(movie_id, connection) for movie_id in game_session.user_profile.watched_movies]  # Fetch movies.
+    game_session.set_watched_movies(watched_movies)
     return game_session
 
-def start_game(user_profile, all_movies, connection):
+
+
+    
+def start_game1(epsilon_user, user_profile, epsilon_greedy, all_movies, connection):
+    epsilon_values = [0.99, 0.85, 0.6, 0.3, 0.000001]
+    print("setting up eplison game session")
+    Epsilon_GameSession = create_game_session(epsilon_user, epsilon_greedy, all_movies, 0, connection)
+    # for m in Epsilon_GameSession.available_movies:
+    #     print(m.movie_id)
+    print("setting up game session")
     GameSession1= create_game_session(user_profile, None, all_movies, 0, connection)
     print ("Welcome to the movie recommendation game!")
     print ("You will be recommended a list of movies based on your preferences.")
@@ -368,9 +387,6 @@ def start_game(user_profile, all_movies, connection):
     print ("You can view the recommendation list at any time.")
     print ("You can also clear the recommendation list.")
     print ("Let's get started!")
-
-    print ("Here is your current recommendation list: ")
-    GameSession1.display_recommendation_list()
     print ("Here are the first 30 available movies: ")
     for movie in GameSession1.available_movies[:30]: # Display the first 30 available movies
         print(movie.title)
@@ -381,76 +397,202 @@ def start_game(user_profile, all_movies, connection):
     print ("You can view the recommendation list at any time by entering 'view'.")
     print ("You can clear the recommendation list by entering 'clear'.")
     print ("You can exit the game at any time by entering 'exit'.")
-    while True:
-        action = input("Enter your action: ")
-        if action.lower() == "exit":
-            break
-        elif action.lower() == "clear":
-            GameSession1.clear_recommendation_list()
-            print ("Recommendation list cleared.")
-        elif action.lower() == "view":
-            GameSession1.display_recommendation_list() 
-        elif action.lower() == "movies":
-            print ("Here are the first 30 available movies: ")
-            for movie in GameSession1.available_movies[:30]: # Display the first 30 available movies
-                print(movie.title)
-        elif action.lower() == "add":
-            movie_title = input("Enter the title of the movie you want to add: ")
-            movie = GameSession1.get_available_movie(movie_title)
-            if movie is None:
-                print("Movie not found in the database.")
-                movie_title = input("Please try and enter the movie again:")
-                movie = GameSession1.get_available_movie(movie_title)
-            print("Movie: ", movie.title)
-            action2 = input("Do you want to add the movie at a specific rank? (Y/N)")
-            if action2.lower() == "y":
-                rank = (int(input("Enter the rank (1-10: ")) -1 )
-                if not (0 <= rank < GameSession.MAX_RECOMMENDATIONS):
-                    print("Invalid rank, please enter a rank between 1 and 10.")
-                    rank = (int(input("Enter the rank (0-9): ")) - 1)
-                    print("Rank: ", rank)
-                print(movie)
-                GameSession1.add_to_recommendation_list(movie, rank)
-            else:
-                GameSession1.add_to_recommendation_list(movie, rank=None)
-            print("Current score: ", GameSession1.score)
-        elif action.lower() == "swap":
-            movie1_title = input("Enter the title of the first movie: ")
-            movie1 = GameSession1.get_available_movie(movie1_title)
-            if movie1 is None:
-                print("Movie not found in the database.")
-                movie_title = input("Please try and enter the movie again:")
-                movie1 = GameSession1.get_available_movie(movie_title)
+    number_of_rounds = 0
+    number_of_moves = 0
+    while number_of_rounds < GameSession.NUMBER_OF_ROUNDS:
+        GameSession1.clear_recommendation_list()
+        print ("Here is your current recommendation list: ")
+        GameSession1.display_recommendation_list()
+        Epsilon_GameSession.clear_recommendation_list()
+        print("Round ", number_of_rounds + 1, " started.")
+        Epsilon_GameSession.epsilon_greedy.update_epsilon(epsilon_values[number_of_rounds])
+        for _ in range(GameSession.MAX_RECOMMENDATIONS):
+            Epsilon_GameSession.add_movie_by_algorithm()
+        while number_of_moves < GameSession.MAX_MOVES:
+            while True:
+                action = input("Enter your action: ")
+                if action.lower() == "exit":
+                    return
+                elif action.lower() == "clear":
+                    GameSession1.clear_recommendation_list()
+                    print ("Recommendation list cleared.")
+                elif action.lower() == "view":
+                    GameSession1.display_recommendation_list() 
+                elif action.lower() == "movies":
+                    print ("Here are the first 30 available movies: ")
+                    for movie in GameSession1.available_movies[:30]: # Display the first 30 available movies
+                        print(movie.title)
+                elif action.lower() == "add":
+                    movie_title = input("Enter the title of the movie you want to add: ")
+                    movie = GameSession1.get_available_movie(movie_title)
+                    while movie is None:
+                        print("Movie not found in the database.")
+                        movie_title = input("Please try and enter the movie again:")
+                        movie = GameSession1.get_available_movie(movie_title)
+                    print("Movie: ", movie.title)
+                    action2 = input("Do you want to add the movie at a specific rank? (Y/N)")
+                    if action2.lower() == "y":
+                        rank = (int(input("Enter the rank (1-10: ")) -1 )
+                        if not (0 <= rank < GameSession.MAX_RECOMMENDATIONS):
+                            print("Invalid rank, please enter a rank between 1 and 10.")
+                            rank = (int(input("Enter the rank (0-9): ")) - 1)
+                            print("Rank: ", rank)
+                        print(movie)
+                        GameSession1.add_to_recommendation_list(movie, rank)
+                    else:
+                        GameSession1.add_to_recommendation_list(movie, rank=None)
+                    number_of_moves += 1
+                    print("Current score: ", GameSession1.score)
+                elif action.lower() == "swap":
+                    movie1_title = input("Enter the title of the first movie: ")
+                    movie1 = GameSession1.get_available_movie(movie1_title)
+                    while movie1 is None:
+                        print("Movie not found in the database.")
+                        movie_title = input("Please try and enter the movie again:")
+                        movie1 = GameSession1.get_available_movie(movie_title)
 
-            movie2_title = input("Enter the title of the second movie: ")
-            movie2 = GameSession1.get_available_movie(movie2_title)
-            while movie2 is None:
-                print("Movie not found in the database.")
-                movie_title = input("Please try and enter the movie again:")
-                movie2 = GameSession1.get_available_movie(movie_title)
-            
-            GameSession1.swap_movies(movie1, movie2)
-            print("Current score: ", GameSession1.score)
-        elif action.lower() == "remove":
-            movie_title = input("Enter the title of the movie you want to remove: ")
-            movie = GameSession1.get_ranked_movie(movie_title)
-            while movie is None:
-                print("Movie not found in the database.")
-                movie_title = input("Please try and enter the movie again:")
-                if movie_title == "exit":
+                    movie2_title = input("Enter the title of the second movie: ")
+                    movie2 = GameSession1.get_available_movie(movie2_title)
+                    while movie2 is None:
+                        print("Movie not found in the database.")
+                        movie_title = input("Please try and enter the movie again:")
+                        movie2 = GameSession1.get_available_movie(movie_title)
+                    if (movie1 in GameSession1.recommendation_list and movie2 not in GameSession1.recommendation_list) or (movie1 not in GameSession1.recommendation_list and movie2 in GameSession1.recommendation_list):
+                        number_of_moves += 1
+                    GameSession1.swap_movies(movie1, movie2)
+                    print("Current score: ", GameSession1.score)
+                elif action.lower() == "remove":
+                    movie_title = input("Enter the title of the movie you want to remove: ")
+                    movie = GameSession1.get_ranked_movie(movie_title)
+                    while movie is None:
+                        print("Movie not found in the database.")
+                        movie_title = input("Please try and enter the movie again:")
+                        if movie_title == "exit":
+                            break
+                        movie = GameSession1.get_ranked_movie(movie_title)
+                    if movie_title == "exit":
+                        break
+                    GameSession1.remove_from_recommendation_list(movie.movie_id)
+                    print("Current score: ", GameSession1.score)
+                elif action.lower() == "submit":
+                    print("Recommendation list submitted.")
+                    print("Here is your final recommendation list: ")
+                    GameSession1.display_recommendation_list()
+                    print("Total score: ", GameSession1.score)
+                    number_of_moves = GameSession.MAX_MOVES
+                    print(number_of_moves)
                     break
-                movie = GameSession1.get_ranked_movie(movie_title)
-            if movie_title == "exit":
-                break
-            GameSession1.remove_from_recommendation_list(movie.movie_id)
-            print("Current score: ", GameSession1.score)
-        elif action.lower() == "submit":
-            print("Recommendation list submitted.")
-            print("Here is your final recommendation list: ")
-            GameSession1.display_recommendation_list()
-            print("Total score: ", GameSession1.score)
-            break
+        print("Round ", number_of_rounds + 1, " completed.")
+        print("Final recommendation list: ")
+        GameSession1.display_recommendation_list()
+        print("Total score: ", GameSession1.score)
+        print("Epsilon Greedy score: ", Epsilon_GameSession.score, "at epsilon value: ", epsilon_values[number_of_rounds])
+        print("Epsilon Greedy recommendation list: ")
+        Epsilon_GameSession.display_recommendation_list()
+        number_of_rounds += 1
+        number_of_moves = 0
+    print("Game completed.")
+    print("Final recommendation list: ")
+    GameSession1.display_recommendation_list()
+    print("Total score: ", GameSession1.score)
+    print("Epsilon Greedy score: ", Epsilon_GameSession.score, "at epsilon value: ", epsilon_values[number_of_rounds])
+    print("Epsilon Greedy recommendation list: ")
+    Epsilon_GameSession.display_recommendation_list()
 
+        
+
+
+# def start_game(user_profile, all_movies, connection):
+#     GameSession1= create_game_session(user_profile, None, all_movies, 0, connection)
+#     print ("Welcome to the movie recommendation game!")
+#     print ("You will be recommended a list of movies based on your preferences.")
+#     print ("You can add movies to the recommendation list, remove movies from the recommendation list, and swap the positions of movies in the recommendation list.")
+#     print ("You can also add movies at a specific rank in the recommendation list.")
+#     print ("You can view the recommendation list at any time.")
+#     print ("You can also clear the recommendation list.")
+#     print ("Let's get started!")
+
+#     print ("Here is your current recommendation list: ")
+#     GameSession1.display_recommendation_list()
+#     print ("Here are the first 30 available movies: ")
+#     for movie in GameSession1.available_movies[:30]: # Display the first 30 available movies
+#         print(movie.title)
+#     print ("You can add a movie to the recommendation list by entering the title of the movie.")
+#     print ("You can remove a movie from the recommendation list by entering the title of the movie.")
+#     print ("You can swap the positions of two movies in the recommendation list by entering the titles of the two movies.")
+#     print ("You can add a movie at a specific rank in the recommendation list by entering the title of the movie and the rank.")
+#     print ("You can view the recommendation list at any time by entering 'view'.")
+#     print ("You can clear the recommendation list by entering 'clear'.")
+#     print ("You can exit the game at any time by entering 'exit'.")
+#     while True:
+#         action = input("Enter your action: ")
+#         if action.lower() == "exit":
+#             break
+#         elif action.lower() == "clear":
+#             GameSession1.clear_recommendation_list()
+#             print ("Recommendation list cleared.")
+#         elif action.lower() == "view":
+#             GameSession1.display_recommendation_list() 
+#         elif action.lower() == "movies":
+#             print ("Here are the first 30 available movies: ")
+#             for movie in GameSession1.available_movies[:30]: # Display the first 30 available movies
+#                 print(movie.title)
+#         elif action.lower() == "add":
+#             movie_title = input("Enter the title of the movie you want to add: ")
+#             movie = GameSession1.get_available_movie(movie_title)
+#             if movie is None:
+#                 print("Movie not found in the database.")
+#                 movie_title = input("Please try and enter the movie again:")
+#                 movie = GameSession1.get_available_movie(movie_title)
+#             print("Movie: ", movie.title)
+#             action2 = input("Do you want to add the movie at a specific rank? (Y/N)")
+#             if action2.lower() == "y":
+#                 rank = (int(input("Enter the rank (1-10: ")) -1 )
+#                 if not (0 <= rank < GameSession.MAX_RECOMMENDATIONS):
+#                     print("Invalid rank, please enter a rank between 1 and 10.")
+#                     rank = (int(input("Enter the rank (0-9): ")) - 1)
+#                     print("Rank: ", rank)
+#                 print(movie)
+#                 GameSession1.add_to_recommendation_list(movie, rank)
+#             else:
+#                 GameSession1.add_to_recommendation_list(movie, rank=None)
+#             print("Current score: ", GameSession1.score)
+#         elif action.lower() == "swap":
+#             movie1_title = input("Enter the title of the first movie: ")
+#             movie1 = GameSession1.get_available_movie(movie1_title)
+#             if movie1 is None:
+#                 print("Movie not found in the database.")
+#                 movie_title = input("Please try and enter the movie again:")
+#                 movie1 = GameSession1.get_available_movie(movie_title)
+
+#             movie2_title = input("Enter the title of the second movie: ")
+#             movie2 = GameSession1.get_available_movie(movie2_title)
+#             while movie2 is None:
+#                 print("Movie not found in the database.")
+#                 movie_title = input("Please try and enter the movie again:")
+#                 movie2 = GameSession1.get_available_movie(movie_title)
+            
+#             GameSession1.swap_movies(movie1, movie2)
+#             print("Current score: ", GameSession1.score)
+#         elif action.lower() == "remove":
+#             movie_title = input("Enter the title of the movie you want to remove: ")
+#             movie = GameSession1.get_ranked_movie(movie_title)
+#             while movie is None:
+#                 print("Movie not found in the database.")
+#                 movie_title = input("Please try and enter the movie again:")
+#                 if movie_title == "exit":
+#                     break
+#                 movie = GameSession1.get_ranked_movie(movie_title)
+#             if movie_title == "exit":
+#                 break
+#             GameSession1.remove_from_recommendation_list(movie.movie_id)
+#             print("Current score: ", GameSession1.score)
+#         elif action.lower() == "submit":
+#             print("Recommendation list submitted.")
+#             print("Here is your final recommendation list: ")
+#             GameSession1.display_recommendation_list()
+#             print("Total score: ", GameSession1.score)
+#             break
 
 
     ### Code relating to Contextual_epsilon_greedy ###

@@ -88,6 +88,8 @@ def get_movie_by_title(title, connection):
         return None  # If no movie is found with the given title
     
 def fetch_movie_by_id(movie_id, connection):
+    if not isinstance(movie_id, int):
+        raise ValueError("Movie ID must be an integer")
     cursor = connection.cursor()
     cursor.execute('SELECT movie_id, title, rating, release_date, certification, poster_path FROM Movies WHERE movie_id = ?', (movie_id,))
     movie_data = cursor.fetchone()

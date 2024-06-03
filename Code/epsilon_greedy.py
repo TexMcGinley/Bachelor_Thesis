@@ -5,11 +5,14 @@ class EpsilonGreedy:
         self.epsilon = epsilon  # exploration rate
         self.connection = connection
         self.min_epsilon = 0.001 # Minimum value for epsilon
-        self.epsilon_decay = 0.99995 # Decay rate for epsilon
+        self.epsilon_decay = 1 # Decay rate for epsilon
         self.movie_scores = {}  # Keep track of average scores for each movie
     
-    def update_epsilon(self): # Decay epsilon
-        self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
+    # def update_epsilon(self): # Decay epsilon
+    #     self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
+
+    def update_epsilon(self, epsilon): # Set epsilon to a specific value
+        self.epsilon = epsilon
     
     def explore_or_exploit(self, available_movies): # Choose to explore or exploit
         if random.random() < self.epsilon:
