@@ -8,8 +8,8 @@ function SubmitWindow({
   epsilonScore,
   epsilonValue,
   onQuit,
-  onNextUser,
   onNextRound,
+  onRestart, // Add the onRestart prop
 }) {
   return (
     <div className="submit-window">
@@ -29,9 +29,7 @@ function SubmitWindow({
         </div>
         <div className="buttons">
           <button onClick={onQuit}>QUIT</button>
-          {round === 5 ? (
-            <button onClick={onNextUser}>NEXT USER</button>
-          ) : (
+          {round === 5 ? null : (
             <button onClick={onNextRound}>NEXT ROUND</button>
           )}
         </div>

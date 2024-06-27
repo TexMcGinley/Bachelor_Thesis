@@ -12,8 +12,8 @@ const __dirname = path.dirname(__filename);
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 2000,
+    height: 1200,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
@@ -23,13 +23,8 @@ function createWindow() {
 
   const startUrl = app.isPackaged
     ? `file://${path.join(__dirname, "../build/index.html")}`
-    : "http://localhost:5173"; // Assuming Vite runs on 5174
+    : "http://localhost:4173"; // Assuming Vite runs on 5174
   mainWindow.loadURL(startUrl);
-
-  // Open the DevTools automatically if in development
-  if (!app.isPackaged) {
-    mainWindow.webContents.openDevTools();
-  }
 }
 
 app.whenReady().then(createWindow);

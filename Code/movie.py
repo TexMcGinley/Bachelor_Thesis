@@ -52,15 +52,6 @@ def fetch_movies(connection):
         movies.append(Movie(movie_id, title, genres, rating, release_date, certification, poster_path))
     return movies
 
-# def create_movie_objects(movies_data):
-#     movie_objects = []
-#     for movie_data in movies_data:
-#         movie_id, title, rating, release_date, age_rating, poster_path = movie_data
-#         # Assuming you have another function or query that gets the genres for a movie.
-#         genres = get_genres_for_movie(movie_id, connection)
-#         movie_objects.append(Movie(movie_id, title, genres, rating, release_date, age_rating, poster_path))
-#     return movie_objects
-
 def get_genres_for_movie(movie_id, connection):
     cursor = connection.cursor()
     query = """

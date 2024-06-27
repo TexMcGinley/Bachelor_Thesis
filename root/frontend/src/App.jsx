@@ -49,8 +49,26 @@ export default function App() {
     fetchUser();
   }, []);
 
+  const resetGame = () => {
+    setHighScore(0);
+    localStorage.setItem("highScore", 0);
+    setScore(0);
+    setEpsilonScore(0);
+    setEpsilonValue(1.0);
+    setMovesLeft(20);
+    setRound(1);
+    setRankedMovies([]);
+    setShowSubmitWindow(false);
+  };
+
   const startGame = () => {
+    resetGame();
     setGameStarted(true);
+  };
+
+  const handleRestart = () => {
+    resetGame();
+    setGameStarted(false);
   };
 
   useEffect(() => {
@@ -262,6 +280,7 @@ export default function App() {
           onQuit={handleQuit}
           onNextUser={handleNextUser}
           onNextRound={handleNextRound}
+          onRestart={handleRestart} // Pass the onRestart prop to SubmitWindow
         />
       )}
     </div>

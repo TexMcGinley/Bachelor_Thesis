@@ -32,18 +32,17 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS MovieGenres (
 )''')
 
 # Fetch and insert genres into the Genres table
-url_genres = 'https://api.themoviedb.org/3/genre/movie/list?api_key=' + api_key
+url_genres = f'https://api.themoviedb.org/3/genre/movie/list?api_key={api_key}'
 response = requests.get(url_genres)
 genres_data = response.json()
 for genre in genres_data['genres']:
-    cursor.execute('INSERT OR IGNORE INTO Genres (genre_id, name) VALUES (?, ?)',
-                   (genre['id'], genre['name']))
+    cursor.execute('INSERT OR IGNORE INTO Genres (genre_id, name) VALUES (?, ?)', (genre['id'], genre['name']))
 
 # Number of pages you want to fetch
-num_pages = 10
+num_pages = 20
 
 # Define acceptable certifications
-acceptable_certifications = ['G', 'PG', 'PG-13']
+acceptable_certifications = ['AL', '6', '9', '12', 'PG-13', 'G', '15', 'PG']
 
 # Function to fetch and insert movies
 def fetch_and_insert_movies(url, cursor):
@@ -66,6 +65,9 @@ def fetch_and_insert_movies(url, cursor):
                 if certification:
                     break
 
+        # Print movie title and certification for debugging
+        print(f'Movie: {movie["title"]}, Certification: {certification}')
+
         # Only insert the movie if it has an acceptable certification
         if certification:
             # Insert movie into Movies table
@@ -80,16 +82,7 @@ def fetch_and_insert_movies(url, cursor):
             movie_details_data = response.json()
 
             for genre in movie_details_data['genres']:
-                cursor.execute('INSERT OR IGNORE INTO MovieGenres (movie_id, genre_id) VALUES (?, ?)',
-                            (movie['id'], genre['id']))
-
-# Iterate over the specified number of pages to fetch top-rated movies
-for page in range(1, num_pages + 1):
-    url_top_rated = f'https://api.themoviedb.org/3/movie/top_rated?api_key={api_key}&language=en-US&page={page}'
-    fetch_and_insert_movies(url_top_rated, cursor)
-
-    # Optional: print progress
-    print(f'Page {page} of top-rated movies completed')
+                cursor.execute('INSERT OR IGNORE INTO MovieGenres (movie_id, genre_id) VALUES (?, ?)', (movie['id'], genre['id']))
 
 # Iterate over the specified number of pages to fetch popular movies
 for page in range(1, num_pages + 1):

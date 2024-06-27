@@ -1,13 +1,13 @@
 import React from "react";
 import "./UserBar.css";
-import { Movie } from "../Movie/Movie"; // Assuming Movie component is reusable for this purpose
+import { Movie } from "../Movie/Movie";
 
 const UserBar = ({ user, watchedMovies }) => {
   return (
     <div className="user-bar">
       <div className="user-profile">
         <div className="user-avatar">
-          <img src={user.avatar} alt="User" />
+          <img src="images/userIcon.svg" alt="User" />
         </div>
         <div className="user-name">
           <h2>{user.name}</h2>

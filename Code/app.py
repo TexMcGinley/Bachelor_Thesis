@@ -5,7 +5,7 @@ from movie import fetch_movies
 from flask_cors import CORS
 from epsilon_greedy import EpsilonGreedy
 import sqlite3
-
+import os
 
 def create_app():
     app = Flask(__name__)
@@ -13,12 +13,14 @@ def create_app():
     game_session = None
 
     def initialize_game():
-        connection = sqlite3.connect('movies.db')
+        base_dir = os.path.abspath(os.path.dirname(__file__))
+        db_path = os.path.join(base_dir, '..', 'movies.db')
+        connection = sqlite3.connect(db_path)
         certification_preferences = {'G': 2, 'PG': 3, 'PG-13': 4, 'R': 5, 'NC-17': 1}
         genre_preferences = create_genre_preferences(8, 5, 6, 7, 4, 9, 3, 2, 1, 5, 6, 7, 8, 5, 10, 1, 2, 3, 4)
-        user_profile = UserProfile(name="John Doe", age=25, location="London", device_type="Desktop", account_age=3, genre_preferences=genre_preferences, certification_preferences=certification_preferences, watched_movies=[13, 28, 73, 101, 105, 120, 121, 122, 128, 129, 155], profile_pic="userIcon.svg")
+        user_profile = UserProfile(name="John Doe", age=25, location="London", device_type="Desktop", account_age=3, genre_preferences=genre_preferences, certification_preferences=certification_preferences, watched_movies=[11, 12, 15, 22, 58, 62, 118, 120, 122, 411, 425], profile_pic="femaleUserIcon.png")
         all_movies = fetch_movies(connection)  # Assumes fetch_movies returns list of Movie objects
-        return create_game_session(user_profile, None, all_movies, 0, connection)
+        return create_game_session(user_profile, None, all_movies, connection)
 
     game_session = initialize_game()
     
@@ -30,7 +32,9 @@ def create_app():
     
     @app.route('/movies')
     def get_movies():
-        connection = sqlite3.connect('movies.db')
+        base_dir = os.path.abspath(os.path.dirname(__file__))
+        db_path = os.path.join(base_dir, '..', 'movies.db')
+        connection = sqlite3.connect(db_path)
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         query = """
@@ -62,7 +66,7 @@ def create_app():
                 "location": user.location,
                 "deviceType": user.device_type,
                 "accountAge": user.account_age,
-                "avatar": f"/src/assets/images/{user.profile_pic}"  # Placeholder path for the avatar
+                "avatar": f"/src/assets/images/femaleUserIcon.png"  # Placeholder path for the avatar
             })
         else:
             return jsonify({"error": "Game session not initialized"}), 500

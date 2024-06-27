@@ -30,7 +30,7 @@ export const Movie = memo(
     const movieStyle = {
       width: isSmall ? "90px" : "200px", // Smaller width if isSmall is true
       height: isSmall ? "135px" : "300px", // Adjust height accordingly
-      fontSize: isSmall ? "0.7rem" : "1.2rem", // Adjust font size accordingly
+      fontSize: isSmall ? "0.57rem" : "1.0rem", // Adjust font size accordingly
     };
 
     const [isFlipped, setIsFlipped] = useState(false);

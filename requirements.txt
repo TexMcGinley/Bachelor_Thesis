@@ -1,0 +1,6 @@
+Flask==3.0.3
+requests==2.26.0
+numpy==2.0.0
+scipy==1.14.0
+matplotlib==3.9.0
+flask_cors==3.0.10

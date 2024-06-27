@@ -1,3 +1,5 @@
 
 node_modules/electron/dist/electron.exe
 root/node_modules/electron/dist/electron.exe
+node_modules
+venv

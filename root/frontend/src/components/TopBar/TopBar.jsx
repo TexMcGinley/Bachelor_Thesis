@@ -1,5 +1,5 @@
 import React from "react";
-import "./TopBar.css"; // Make sure to create a corresponding CSS file for styling
+import "./TopBar.css";
 
 const TopBar = ({ score, movesLeft, round, onSubmit }) => {
   return (
