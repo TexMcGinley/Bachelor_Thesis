@@ -8,7 +8,7 @@ api_key = '01d67420c0e9a0cdb6fdc1b5db7ac492'
 connection = sqlite3.connect('movies.db')
 cursor = connection.cursor()
 
-# Create tables
+# Create tables if they don't exist
 cursor.execute('''CREATE TABLE IF NOT EXISTS Genres (
     genre_id INTEGER PRIMARY KEY,
     name TEXT NOT NULL
@@ -44,8 +44,15 @@ num_pages = 20
 # Define acceptable certifications
 acceptable_certifications = ['AL', '6', '9', '12', 'PG-13', 'G', '15', 'PG']
 
-# Function to fetch and insert movies
 def fetch_and_insert_movies(url, cursor):
+    '''
+    Fetches movies from the provided URL and inserts them into the database.
+
+    Args:
+    ----
+    - url (str): The URL to fetch the movies from.
+    - cursor (sqlite3.Cursor): The SQLite cursor to execute database operations.
+    '''
     response = requests.get(url)
     movies_data = response.json()
 
@@ -92,5 +99,6 @@ for page in range(1, num_pages + 1):
     # Optional: print progress
     print(f'Page {page} of popular movies completed')
 
+# Commit the transaction and close the connection
 connection.commit()
 connection.close()
