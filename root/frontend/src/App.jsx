@@ -19,6 +19,7 @@ import SubmitWindow from "./components/SubmitWindow/SubmitWindow";
 import StartScreen from "./components/StartScreen/StartScreen";
 
 export default function App() {
+  // State variables
   const [watchedMovies, setWatchedMovies] = useState([]);
   const [user, setUser] = useState(null);
   const [movies, setMovies] = useState([]);
@@ -34,6 +35,7 @@ export default function App() {
   const [movesLeft, setMovesLeft] = useState(20); // Add movesLeft state
   const [round, setRound] = useState(1); // Add round state
 
+  // Fetch user data on component mount
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -49,6 +51,7 @@ export default function App() {
     fetchUser();
   }, []);
 
+  // Reset the game state
   const resetGame = () => {
     setHighScore(0);
     localStorage.setItem("highScore", 0);
@@ -61,16 +64,19 @@ export default function App() {
     setShowSubmitWindow(false);
   };
 
+  // Start the game
   const startGame = () => {
     resetGame();
     setGameStarted(true);
   };
 
+  // Restart the game
   const handleRestart = () => {
     resetGame();
     setGameStarted(false);
   };
 
+  // Fetch watched movies when user data is available
   useEffect(() => {
     if (user) {
       const fetchWatchedMovies = async () => {
@@ -90,6 +96,7 @@ export default function App() {
     }
   }, [user]);
 
+  // Fetch available movies
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -123,6 +130,7 @@ export default function App() {
     fetchMovies();
   }, [watchedMovies]);
 
+  // Fetch the score
   useEffect(() => {
     fetch("http://localhost:5000/score")
       .then((response) => response.json())
@@ -132,6 +140,7 @@ export default function App() {
       .catch((error) => console.error("Error fetching score:", error));
   }, []);
 
+  // Handle submission of the score
   const handleSubmit = async () => {
     try {
       const response = await fetch("http://localhost:5000/submit", {
@@ -159,14 +168,17 @@ export default function App() {
     }
   };
 
+  // Handle quitting the game
   const handleQuit = () => {
     window.close();
   };
 
+  // Handle moving to the next user (placeholder for future implementation)
   const handleNextUser = () => {
     console.log("Setup for next user");
   };
 
+  // Handle moving to the next round
   const handleNextRound = () => {
     setShowSubmitWindow(false);
     setMovesLeft(20); // Reset moves left for the next round
@@ -187,6 +199,7 @@ export default function App() {
     }
   };
 
+  // Handle the drag end event for DnD kit
   const handleDragEnd = async (event) => {
     const { active, over } = event;
     if (!over || active.id === over.id) {
@@ -223,6 +236,7 @@ export default function App() {
     }
   };
 
+  // Initialize sensors for DnD kit
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(TouchSensor),
@@ -231,10 +245,12 @@ export default function App() {
     })
   );
 
+  // Render start screen if game has not started
   if (!gameStarted) {
     return <StartScreen onStart={startGame} />;
   }
 
+  // Main app render
   return (
     <div className="App">
       <div className="header">

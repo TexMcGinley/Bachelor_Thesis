@@ -8,17 +8,36 @@ import sqlite3
 import os
 
 def create_app():
+    '''
+    Creates and configures the Flask application.
+
+    Returns:
+    ----
+    - Flask: The configured Flask application.
+    '''
     app = Flask(__name__)
     CORS(app)
     game_session = None
 
     def initialize_game():
+        '''
+        Initializes the game session with user profile and movie data.
+
+        Returns:
+        ----
+        - GameSession: The initialized game session.
+        '''
         base_dir = os.path.abspath(os.path.dirname(__file__))
         db_path = os.path.join(base_dir, '..', 'movies.db')
         connection = sqlite3.connect(db_path)
         certification_preferences = {'G': 2, 'PG': 3, 'PG-13': 4, 'R': 5, 'NC-17': 1}
         genre_preferences = create_genre_preferences(8, 4, 6, 5, 2, 10, 7, 2, 1, 4, 6, 9, 8, 5, 6, 7, 2, 3, 4)
-        user_profile = UserProfile(name="Ron Swanson", age=55, location="Indiana", device_type="Desktop", account_age=3, genre_preferences=genre_preferences, certification_preferences=certification_preferences, watched_movies=[11, 12, 15, 22, 284053, 27205, 38757, 329865, 526896, 1076364, 1029575], profile_pic="femaleUserIcon.png")
+        user_profile = UserProfile(
+            name="Ron Swanson", age=55, location="Indiana", device_type="Desktop", account_age=3, 
+            genre_preferences=genre_preferences, certification_preferences=certification_preferences, 
+            watched_movies=[11, 12, 15, 22, 284053, 27205, 38757, 329865, 526896, 1076364, 1029575], 
+            profile_pic="femaleUserIcon.png"
+        )
         all_movies = fetch_movies(connection)  # Assumes fetch_movies returns list of Movie objects
         return create_game_session(user_profile, None, all_movies, connection)
 
@@ -26,12 +45,26 @@ def create_app():
     
     @app.route('/watched_movies')
     def get_watched_movies():
+        '''
+        Endpoint to get the list of watched movies.
+
+        Returns:
+        ----
+        - Response: JSON response containing the list of watched movies.
+        '''
         watched_movies = game_session.fetch_watched_movies()
         watched_movies = [movie.to_dict() for movie in watched_movies]
         return jsonify(watched_movies)
     
     @app.route('/movies')
     def get_movies():
+        '''
+        Endpoint to get the list of all movies.
+
+        Returns:
+        ----
+        - Response: JSON response containing the list of all movies.
+        '''
         base_dir = os.path.abspath(os.path.dirname(__file__))
         db_path = os.path.join(base_dir, '..', 'movies.db')
         connection = sqlite3.connect(db_path)
@@ -51,6 +84,13 @@ def create_app():
 
     @app.route('/score')
     def get_score():
+        '''
+        Endpoint to get the current score.
+
+        Returns:
+        ----
+        - Response: JSON response containing the current score or an error message.
+        '''
         if game_session is not None:
             return jsonify({"score": game_session.score})
         else:
@@ -58,6 +98,13 @@ def create_app():
         
     @app.route('/user')
     def get_user():
+        '''
+        Endpoint to get the user profile details.
+
+        Returns:
+        ----
+        - Response: JSON response containing user profile details or an error message.
+        '''
         if game_session is not None:
             user = game_session.user_profile
             return jsonify({
@@ -73,6 +120,13 @@ def create_app():
     
     @app.route('/submit', methods=['POST'])
     def submit():
+        '''
+        Endpoint to submit the current round and get scores.
+
+        Returns:
+        ----
+        - Response: JSON response containing scores and game state or an error message.
+        '''
         if game_session:
             user_score, epsilon_score, epsilon_value = game_session.submit_round()
             game_session.round += 1  # Increment round after submission
@@ -90,6 +144,13 @@ def create_app():
             
     @app.route('/update_rankings', methods=['POST'])
     def update_rankings():
+        '''
+        Endpoint to update the movie rankings.
+
+        Returns:
+        ----
+        - Response: JSON response containing updated movie lists and score or an error message.
+        '''
         data = request.get_json()
         if game_session:
             from_index = data['fromId']
