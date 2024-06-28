@@ -30,3 +30,4 @@ def create_user_profile(name, age, location, device_type, account_age, genre_pre
 def create_genre_preferences(adventure, fantasy, animation, drama, horror, action, comedy, history, thriller, crime, documentary, science_fiction, mystery, music, romance, family, war, western, tv_movie):
    genre_preference = {'Adventure': adventure, 'Fantasy': fantasy, 'Animation': animation, 'Drama': drama, 'Horror': horror, 'Action': action, 'Comedy': comedy, 'History': history, 'Thriller': thriller, 'Crime': crime, 'Documentary': documentary, 'Science Fiction': science_fiction, 'Mystery': mystery, 'Music': music, 'Romance': romance, 'Family': family, 'War': war, 'Western': western, 'TV Movie': tv_movie}  
    return genre_preference
+

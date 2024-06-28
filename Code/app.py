@@ -17,8 +17,8 @@ def create_app():
         db_path = os.path.join(base_dir, '..', 'movies.db')
         connection = sqlite3.connect(db_path)
         certification_preferences = {'G': 2, 'PG': 3, 'PG-13': 4, 'R': 5, 'NC-17': 1}
-        genre_preferences = create_genre_preferences(8, 5, 6, 7, 4, 9, 3, 2, 1, 5, 6, 7, 8, 5, 10, 1, 2, 3, 4)
-        user_profile = UserProfile(name="John Doe", age=25, location="London", device_type="Desktop", account_age=3, genre_preferences=genre_preferences, certification_preferences=certification_preferences, watched_movies=[11, 12, 15, 22, 58, 62, 118, 120, 122, 411, 425], profile_pic="femaleUserIcon.png")
+        genre_preferences = create_genre_preferences(8, 4, 6, 5, 2, 10, 7, 2, 1, 4, 6, 9, 8, 5, 6, 7, 2, 3, 4)
+        user_profile = UserProfile(name="Ron Swanson", age=55, location="Indiana", device_type="Desktop", account_age=3, genre_preferences=genre_preferences, certification_preferences=certification_preferences, watched_movies=[11, 12, 15, 22, 284053, 27205, 38757, 329865, 526896, 1076364, 1029575], profile_pic="femaleUserIcon.png")
         all_movies = fetch_movies(connection)  # Assumes fetch_movies returns list of Movie objects
         return create_game_session(user_profile, None, all_movies, connection)
 
