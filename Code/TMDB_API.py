@@ -42,7 +42,7 @@ for genre in genres_data['genres']:
 num_pages = 20
 
 # Define acceptable certifications
-acceptable_certifications = ['AL', '6', '9', '12', 'PG-13', 'G', '15', 'PG']
+acceptable_certifications = ['AL', '6', '9', '12', 'PG-13', 'G', 'PG']
 
 def fetch_and_insert_movies(url, cursor):
     '''
