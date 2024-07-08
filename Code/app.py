@@ -33,7 +33,7 @@ def create_app():
         certification_preferences = {'G': 2, 'PG': 3, 'PG-13': 4, 'R': 5, 'NC-17': 1}
         genre_preferences = create_genre_preferences(8, 4, 6, 5, 2, 10, 7, 2, 1, 4, 6, 9, 8, 5, 6, 7, 2, 3, 4)
         user_profile = UserProfile(
-            name="Ron Swanson", age=55, location="Indiana", device_type="Desktop", account_age=3, 
+            name="Ron Swanson", age=32, location="Indiana", device_type="Desktop", account_age=3, 
             genre_preferences=genre_preferences, certification_preferences=certification_preferences, 
             watched_movies=[11, 12, 15, 22, 284053, 27205, 38757, 329865, 526896, 1076364, 1029575], 
             profile_pic="femaleUserIcon.png"
