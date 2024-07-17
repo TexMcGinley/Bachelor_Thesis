@@ -81,7 +81,7 @@
 
    ```cmd
    python -m venv venv
-   venv\Scripts ctivate
+   venv\Scripts\activate
    ```
 
 3. Install the required Python packages.
@@ -93,7 +93,7 @@
 4. Navigate to the frontend directory and install Node.js dependencies.
 
    ```cmd
-   cd root/frontrontend
+   cd root/frontend
    npm install
    ```
 
