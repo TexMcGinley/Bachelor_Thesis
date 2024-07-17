@@ -78,7 +78,7 @@
     "start": "concurrently \"npm run backend\" \"npm run frontend\" \"npm run electron\"",
     "backend": "cd .. && cd Code && python app.py",
     "frontend": "cd .. && cd root/frontend && npm install && npm run build && npm run preview",
-    "electron": "wait-on http://localhost:4173 && electron ."
+    "electron": "npm install && wait-on http://localhost:4173 && electron ."
   },
   "keywords": [],
   "author": "",
