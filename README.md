@@ -54,7 +54,7 @@
    cd ..
    ```
 
-7. Run this script to start the application.
+7. Run this script to start the application. It will take a couple of seconds to load.
    ```cmd
    npm run start
    ```
